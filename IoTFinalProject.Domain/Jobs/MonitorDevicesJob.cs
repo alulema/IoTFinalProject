@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using IoTFinalProject.Domain.Hubs;
 using Quartz;
 
 namespace IoTFinalProject.Domain.Jobs
@@ -18,6 +19,8 @@ namespace IoTFinalProject.Domain.Jobs
                 }
             }
 
+            if (DeviceMonitoringReferer.LocalInstance != null && DeviceMonitoringReferer.Instance != null)
+                DeviceMonitoringReferer.Instance.SendTransactionUpdate("ok").GetAwaiter().GetResult();
             return Task.FromResult(1);
         }
     }

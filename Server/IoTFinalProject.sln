@@ -1,8 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IoTFinalProject", "IoTFinalProject.csproj", "{24F59551-282C-404C-9F00-01A3D614C0DE}"
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2041
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IoTFinalProject", "IoTFinalProject.csproj", "{24F59551-282C-404C-9F00-01A3D614C0DE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IoTFinalProject.Domain", "..\IoTFinalProject.Domain\IoTFinalProject.Domain.csproj", "{27CA918C-B269-47C7-86AB-550B837975E0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IoTFinalProject.Domain", "..\IoTFinalProject.Domain\IoTFinalProject.Domain.csproj", "{27CA918C-B269-47C7-86AB-550B837975E0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,5 +21,11 @@ Global
 		{27CA918C-B269-47C7-86AB-550B837975E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{27CA918C-B269-47C7-86AB-550B837975E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{27CA918C-B269-47C7-86AB-550B837975E0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0A2FF06E-DE27-4AC6-A893-5C779D2101F4}
 	EndGlobalSection
 EndGlobal
