@@ -1,8 +1,10 @@
 ﻿using System;
-using IoTFinalProject.Data;
-using IoTFinalProject.Model;
-using IoTFinalProject.ViewModel;
+using IoTFinalProject.Domain;
+using IoTFinalProject.Domain.Data;
+using IoTFinalProject.Domain.Model;
+using IoTFinalProject.Domain.ViewModel;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace IoTFinalProject.Controllers
@@ -12,6 +14,7 @@ namespace IoTFinalProject.Controllers
     public class ThermostatController : ControllerBase
     {
         private readonly ILogger _logger;
+        private readonly string _connString = Startup.Configuration.GetConnectionString("DefaultDatabase");
 
         public ThermostatController(ILogger<ThermostatController> logger)
         {
@@ -23,7 +26,7 @@ namespace IoTFinalProject.Controllers
         {
             try
             {
-                return DbService.GetLatestEntries();
+                return DbService.GetLatestEntries(_connString);
             }
             catch (Exception e)
             {
@@ -46,7 +49,7 @@ namespace IoTFinalProject.Controllers
 
             try
             {
-                DbService.InsertLoginRequest(item);
+                DbService.InsertLoginRequest(item, _connString);
             }
             catch (Exception e)
             {
@@ -56,16 +59,15 @@ namespace IoTFinalProject.Controllers
 
         }
 
-        // PUT api/values/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
 
-        // DELETE api/values/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        [HttpPost("online")]
+        public void SetOnline([FromBody] OnlineRequestViewModel request)
         {
+            if (!General.OnlineDevices.ContainsKey(request.DeviceId))
+            {
+                request.Timestamp = DateTime.Now;
+                General.OnlineDevices.Add(request.DeviceId, request);
+            }
         }
-    }
+   }
 }

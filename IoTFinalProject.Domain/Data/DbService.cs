@@ -1,28 +1,29 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using IoTFinalProject.Model;
-using Microsoft.Extensions.Configuration;
+using IoTFinalProject.Domain.Model;
 using MySql.Data.MySqlClient;
 
-namespace IoTFinalProject.Data
+namespace IoTFinalProject.Domain.Data
 {
     public class DbService
     {
-        private static MySqlConnection OpenConnection()
+        private static MySqlConnection OpenConnection(string connString)
         {
+/*
             var connString = Startup.Configuration.GetConnectionString("DefaultDatabase");
+            */
             var conn = new MySqlConnection(connString);
             conn.Open();
 
             return conn;
         }
 
-        public static void InsertLoginRequest(ThermostatRequest item)
+        public static void InsertLoginRequest(ThermostatRequest item, string connString)
         {
             MySqlConnection conn = null;
 
-            conn = OpenConnection();
+            conn = OpenConnection(connString);
             var query =
                 "INSERT INTO Temperature (device_id, device_status, measurement, unit, timestamp) VALUES " +
                 "(@DeviceId, @DeviceStatus, @Measurement, @Unit, @Timestamp)";
@@ -39,12 +40,12 @@ namespace IoTFinalProject.Data
                 conn.Close();
         }
 
-        public static ThermostatRequest[] GetLatestEntries()
+        public static ThermostatRequest[] GetLatestEntries(string connString)
         {
             var items = new List<ThermostatRequest>();
             MySqlConnection conn = null;
 
-            conn = OpenConnection();
+            conn = OpenConnection(connString);
             var query = "SELECT * FROM Temperature ORDER BY id DESC LIMIT 10";
             MySqlCommand cmd = new MySqlCommand(query, conn);
 

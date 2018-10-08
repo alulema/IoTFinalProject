@@ -1,6 +1,6 @@
 using System.Runtime.Serialization;
 
-namespace IoTFinalProject.ViewModel
+namespace IoTFinalProject.Domain.ViewModel
 {
     [DataContract]
     public class ThermostatRequestViewModel

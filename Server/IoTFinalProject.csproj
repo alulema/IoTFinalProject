@@ -10,12 +10,21 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.App" />
-        <PackageReference Include="MySql.Data.EntityFrameworkCore">
-          <Version>8.0.12</Version>
-        </PackageReference>
         <PackageReference Include="Newtonsoft.Json">
           <Version>11.0.2</Version>
         </PackageReference>
+        <PackageReference Include="Quartz">
+          <Version>3.0.7</Version>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="IoTFinalProject.Domain\obj\project.assets.json" />
+      <_ContentIncludedByDefault Remove="IoTFinalProject.Domain\obj\project.packagespec.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\IoTFinalProject.Domain\IoTFinalProject.Domain.csproj" />
     </ItemGroup>
 
 </Project>

@@ -1,6 +1,6 @@
 using System;
 
-namespace IoTFinalProject.Model
+namespace IoTFinalProject.Domain.Model
 {
     public class ThermostatRequest
     {
