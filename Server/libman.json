@@ -10,6 +10,14 @@
         "dist/browser/signalr.min.js",
         "dist/browser/signalr.min.js.map"
       ]
+    },
+    {
+      "provider": "cdnjs",
+      "library": "handlebars.js@4.0.12",
+      "destination": "wwwroot/lib/handlebars/",
+      "files": [
+        "handlebars.min.js"
+      ]
     }
   ]
 }
