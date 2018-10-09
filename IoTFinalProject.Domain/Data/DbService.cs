@@ -10,9 +10,6 @@ namespace IoTFinalProject.Domain.Data
     {
         private static MySqlConnection OpenConnection(string connString)
         {
-/*
-            var connString = Startup.Configuration.GetConnectionString("DefaultDatabase");
-            */
             var conn = new MySqlConnection(connString);
             conn.Open();
 

@@ -1,15 +1,19 @@
-﻿"use strict";
+﻿var connection = new signalR.HubConnectionBuilder().withUrl("/monitorHub").build();
 
-var connection = new signalR.HubConnectionBuilder().withUrl("/monitorHub").build();
+$(document).ready(function() {
+    connection = new signalR.HubConnectionBuilder().withUrl("/monitorHub").build();
 
-connection.on("ReceiveMessage", function (user, message) {
-    console.log(user);
-    console.log(message);
+    connection.on("UpdateDeviceList", onDeviceListUpdated);
+    connection.start().catch(onHubConnectionError);
 });
 
-connection.start().catch(function (err) {
+var onDeviceListUpdated = function (json) {
+    console.log(json);
+};
+
+var onHubConnectionError = function (err) {
     return console.error(err.toString());
-});
+};
 
 //document.getElementById("sendButton").addEventListener("click", function (event) {
 //    var user = document.getElementById("userInput").value;

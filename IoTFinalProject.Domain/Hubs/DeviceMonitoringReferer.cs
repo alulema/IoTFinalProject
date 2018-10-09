@@ -30,17 +30,12 @@ namespace IoTFinalProject.Domain.Hubs
             _connections.TryRemove(connectionId, out outed);
         }
 
-        public async Task<bool> SendTransactionUpdate(string json)
+        public async Task<bool> SendOnlineDevices()
         {
             try
             {
-                //Clients.All.receiveTransactionUpdate(json);
-                await Clients.All.SendAsync("ReceiveMessage", "Alexis", "ya estamos con la comunicacion");
+                await Clients.All.SendAsync("ReceiveMessage", General.OnlineDevices);
                 return true;
-            }
-            catch (IndexOutOfRangeException)
-            {
-                return false;
             }
             catch (Exception)
             {

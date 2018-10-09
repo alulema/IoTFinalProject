@@ -13,14 +13,15 @@ namespace IoTFinalProject.Domain.Jobs
 
             foreach (var key in General.OnlineDevices.Keys)
             {
-                if (General.OnlineDevices.ContainsKey(key) && General.OnlineDevices[key].Timestamp.AddSeconds(timeout) > DateTime.Now)
+                if (General.OnlineDevices.ContainsKey(key) && General.OnlineDevices[key].Timestamp.AddSeconds(timeout) < DateTime.Now)
                 {
                     General.OnlineDevices.Remove(key);
                 }
             }
 
             if (DeviceMonitoringReferer.LocalInstance != null && DeviceMonitoringReferer.Instance != null)
-                DeviceMonitoringReferer.Instance.SendTransactionUpdate("ok").GetAwaiter().GetResult();
+                DeviceMonitoringReferer.Instance.SendOnlineDevices().GetAwaiter().GetResult();
+            
             return Task.FromResult(1);
         }
     }
