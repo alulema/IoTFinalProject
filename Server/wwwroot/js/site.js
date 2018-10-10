@@ -25,9 +25,17 @@ $(document).ready(function() {
         width: 420,
         height: 240
     });
+    $("#dlgChooseDate").ejDialog({
+        title: "Special dates",
+        showOnInit: false,
+        backgroundScroll: false,
+        enableModal: true,
+        enableResize: false,
+        width: 240,
+        height: 140
+    });
 
-    $("#txtTemperature").ejNumericTextbox(
-        {
+    $("#txtTemperature").ejNumericTextbox({
             name: "numeric",
             value: 65,
             minValue: 40,
@@ -36,10 +44,18 @@ $(document).ready(function() {
         });
     $('#startTime').ejTimePicker({width: 110});
     $('#endTime').ejTimePicker({width: 110});
+    $("#daterangepick").ejDateRangePicker({width:200});
 });
 
 var onDeviceListUpdated = function (json) {
     if (!_.isEqual(deviceArray, json)) {
+        $("#divDeviceDetails").hide();
+
+        if (json.length === 0)
+            $("#divScanning").show();
+        else
+            $("#divScanning").hide();
+
         deviceArray = json;
         var source = $("#Device-Template").html();
         var template = Handlebars.compile(source);
@@ -73,12 +89,50 @@ var onDeviceClick = function(device_id) {
 var onGetDeviceConfigSuccess = function(json) {
     loadedConfig = json;
     $("#divDeviceDetails").show();
-    buildDailyPoints(loadedConfig.daily_points);
+    var satPoints = new Array();
+    var sunPoints = new Array();
+    
+    $.each(loadedConfig.weekend_points, function(i, v) {
+        if (v.is_saturday)
+            satPoints.push(v);
+        if (v.is_sunday)
+            sunPoints.push(v);
+    });
+    buildDailyPoints("divDailyPointList", loadedConfig.daily_points);
+    buildDailyPoints("divSaturdayPointList", satPoints);
+    buildDailyPoints("divSundayPointList", sunPoints);
 };
 
-var addPoint = function(deviceId) {
-    $("#dlgEditPoint").ejDialog("setTitle","Add Daily Point");
+var addPoint = function(title, weekendOption) {
+    $('#checkActive').prop('checked', true);
+    $("#txtTemperature").ejNumericTextbox({
+        name: "numeric",
+        value: 65,
+        minValue: 40,
+        maxValue: 125,
+        width: 65
+    });
+    $('#startTime').ejTimePicker({
+        value : "12:00 AM",
+        width: 110
+    });
+    $('#endTime').ejTimePicker({
+        value : "12:00 AM",
+        width: 110
+    });
+    $("#hdnDeviceId").val("");
+    $("#hdnWeekendOption").val(weekendOption);
+
+    $("#dlgEditPoint").ejDialog("setTitle",title);
     $("#dlgEditPoint").ejDialog("open");
+};
+
+var addDailyPoint = function() {
+    addPoint("Add Daily Point", "");
+};
+
+var addWeekendPoint = function(option) {
+    addPoint("Add Point on " + (option === 0 ? "saturday" : "sunday"), option);
 };
 
 var editPoint = function(pointId, deviceId) {
@@ -88,8 +142,36 @@ var editPoint = function(pointId, deviceId) {
     //         return false;
     //     }
     // });
+    $.each(loadedConfig.daily_points, function (i, v) {
+        if (v.id === pointId) {
+            $('#checkActive').prop('checked', v.is_active);
+            $("#txtTemperature").ejNumericTextbox({
+                    name: "numeric",
+                    value: v.temperature,
+                    minValue: 40,
+                    maxValue: 125,
+                    width: 65
+                });
+            $('#startTime').ejTimePicker({
+                value : v.start_time,
+                width: 110
+            });
+            $('#endTime').ejTimePicker({
+                value : v.end_time,
+                width: 110
+            });
+            $("#hdnDeviceId").val(pointId);
+            return false;
+        }
+    });
+    
+    $("#dlgEditPoint").ejDialog("setTitle","Edit Daily Point");
     $("#dlgEditPoint").ejDialog("open");
 };
+
+var addDatesPoint = function() {
+    $("#dlgChooseDate").ejDialog("open");
+}
 
 var removePoint = function(pointId, deviceId) {
     $.each(loadedConfig.daily_points, function (i, v) {
@@ -102,6 +184,8 @@ var removePoint = function(pointId, deviceId) {
 };
 
 var onDailyPointAdded = function() {
+    var isNew = $("#hdnDeviceId").val() === "";
+    var weekendOption = $("#hdnWeekendOption").val();
     var temperature = $("#txtTemperature").ejNumericTextbox("getValue");
     var startTime = $("#startTime").ejTimePicker("getValue");
     var endTime = $("#endTime").ejTimePicker("getValue");
@@ -124,18 +208,48 @@ var onDailyPointAdded = function() {
     }
     
     var point = {
-        id: generateId(),
+        id: isNew ? generateId() : $("#hdnDeviceId").val(),
         temperature: temperature,
         start_hour: ("0" + startHour).slice(-2),
         start_minute: ("0" + startMinute).slice(-2),
+        start_time: startTime,
         end_hour: ("0" + endHour).slice(-2),
         end_minute: ("0" + endMinute).slice(-2),
+        end_time: endTime,
         is_active: $('#checkActive').prop('checked'),
+        is_saturday: weekendOption === "" ? false : (weekendOption === "0"),
+        is_sunday: weekendOption === "" ? false : (weekendOption === "1"),
         selected_date: null
     };
     
-    loadedConfig.daily_points.push(point);
-    buildDailyPoints(loadedConfig.daily_points);
+    if (isNew) {
+        if (weekendOption === "")
+            loadedConfig.daily_points.push(point);
+        else
+            loadedConfig.weekend_points.push(point);
+    }
+    else
+        $.each(loadedConfig.daily_points, function (i, v) {
+            if (v.id === point.id) {
+                if (weekendOption === "")
+                    loadedConfig.daily_points[i] = point;
+                else
+                    loadedConfig.weekend_points[i] = point;
+                return false;
+            }
+        });
+
+    if (weekendOption === "")
+        buildDailyPoints("divDailyPointList", loadedConfig.daily_points);
+    else {
+        var wPoints = new Array();
+        $.each(loadedConfig.weekend_points, function(i, v) {
+            if ((weekendOption === "0" && v.is_saturday) || (weekendOption === "1" && v.is_sunday))
+                wPoints.push(v);
+        });
+        buildDailyPoints((weekendOption === "0" ? "divSaturdayPointList" : "divSundayPointList"), wPoints);
+    }
+
     $("#dlgEditPoint").ejDialog("close");
 };
 
@@ -149,10 +263,17 @@ var generateId = function () {
     return text;
 };
 
-var buildDailyPoints = function(json) {
+var buildDailyPoints = function(divElem, json) {
     var source = $("#DailyPoint-Template").html();
     var template = Handlebars.compile(source);
-    $("#divDailyPointList").html("");
+    $("#" + divElem).html("");
     var html = template({Items: json});
-    $("#divDailyPointList").append(html);
+    $("#" + divElem).append(html);
+};
+
+var onSelectedRange = function () {
+    var range = $("#daterangepick").ejDateRangePicker("getSelectedRange");
+    $("#dlgChooseDate").ejDialog("close");
+    addPoint("Add Point Details", "");
+
 };
