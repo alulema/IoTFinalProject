@@ -37,7 +37,7 @@ int main() {
     read_device_properties(&DEVICE_ID, &UNIT);
 
     // 1. send device info to cloud to indicate it is online
-    //char* online_request = create_online_request(DEVICE_ID, UNIT);
+    //char* online_request = create_online_request(DEVICE_ID, UNIT); // throwing memerror!!!
     char online_request[50];
     strcpy(online_request, "{ \"device_id\": \"");
     strcat(online_request, DEVICE_ID);
@@ -45,10 +45,7 @@ int main() {
     strcat(online_request, UNIT);
     strcat(online_request, "\", \"type\": \"Thermostat\" }");
 
-    while (1) {
-        send_post(online_request, URL_ONLINE);
-        sleep(5);
-    }
+    send_post(online_request, URL_ONLINE);
 
     // 2. send enqueued data to cloud to indicate it is online
     // Read the heater state.
