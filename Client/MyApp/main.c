@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <syslog.h>
+#include <zconf.h>
 
 #include "tc_error.h"
 #include "tc_config.h"
@@ -11,6 +12,7 @@
 #include "tc_state.h"
 
 static const char*  URL             = "http://localhost:5000/api/thermostat";
+static const char*  URL_ONLINE      = "http://localhost:5000/api/thermostat/online";
 static const char*  TEMP_FILENAME   = "/tmp/temp";
 static const char*  STATE_FILENAME  = "/tmp/status";
 static const char*  WORKING_DIR     = "/";
@@ -35,12 +37,18 @@ int main() {
     read_device_properties(&DEVICE_ID, &UNIT);
 
     // 1. send device info to cloud to indicate it is online
-    char * online_request = create_online_request(DEVICE_ID, UNIT);
-    char * online_url = (char *) malloc(sizeof(char) * 100);
-    strcpy(online_url, URL);
-    strcat(online_url, "/online");
+    //char* online_request = create_online_request(DEVICE_ID, UNIT);
+    char online_request[50];
+    strcpy(online_request, "{ \"device_id\": \"");
+    strcat(online_request, DEVICE_ID);
+    strcat(online_request, "\", \"unit\": \"");
+    strcat(online_request, UNIT);
+    strcat(online_request, "\", \"type\": \"Thermostat\" }");
 
-    send_post(online_request, online_url);
+    while (1) {
+        send_post(online_request, URL_ONLINE);
+        sleep(5);
+    }
 
     // 2. send enqueued data to cloud to indicate it is online
     // Read the heater state.

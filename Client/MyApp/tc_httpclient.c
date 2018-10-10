@@ -5,7 +5,7 @@
 
 #include "tc_httpclient.h"
 
-bool send_post(char * json, char * url) {
+bool send_post(char* json, const char * url) {
     CURL *curl;
     CURLcode res;
 
