@@ -11,7 +11,7 @@
 
 char* create_online_request(char * device, char * unit) {
     char json[50];
-    strcpy(json, "{ \"device-id\": \"");
+    strcpy(json, "{ \"device_id\": \"");
     strcat(json, device);
     strcat(json, "\", \"unit\": \"");
     strcat(json, unit);
