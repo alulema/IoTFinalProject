@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using IoTFinalProject.Domain;
 using IoTFinalProject.Domain.Data;
 using IoTFinalProject.Domain.Model;
@@ -6,6 +7,7 @@ using IoTFinalProject.Domain.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace IoTFinalProject.Controllers
 {
@@ -20,7 +22,7 @@ namespace IoTFinalProject.Controllers
         {
             _logger = logger;
         }
-        
+
         [HttpGet]
         public ThermostatRequest[] Get()
         {
@@ -56,9 +58,7 @@ namespace IoTFinalProject.Controllers
                 _logger.LogError("InsertLoginRequest(item) THROWS AN ERROR", e);
                 throw;
             }
-
         }
-
 
         [HttpPost("online")]
         public void SetOnline([FromBody] OnlineRequestViewModel request)
@@ -69,5 +69,52 @@ namespace IoTFinalProject.Controllers
                 General.OnlineDevices.Add(request.DeviceId, request);
             }
         }
-   }
+
+        [HttpGet("getdeviceconfig")]
+        public DeviceConfiguration GetDeviceConfig(string deviceId)
+        {
+            if (!Directory.Exists("devices"))
+                Directory.CreateDirectory("devices");
+
+            string filePath = $"devices/config.{deviceId}.json";
+
+            DeviceConfiguration config;
+
+            if (!System.IO.File.Exists(filePath))
+            {
+                config = new DeviceConfiguration
+                {
+                    DeviceId = deviceId
+                };
+                var json = JsonConvert.SerializeObject(config);
+                StreamWriter fileStream = System.IO.File.CreateText(filePath);
+                fileStream.Write(json);
+                fileStream.Close();
+            }
+            else
+            {
+                var json = System.IO.File.ReadAllText(filePath);
+                config = JsonConvert.DeserializeObject<DeviceConfiguration>(json);
+            }
+
+            return config;
+        }
+
+        [HttpPost("savedeviceconfig")]
+        public void GetDeviceConfig(DeviceConfiguration config)
+        {
+            if (!Directory.Exists("devices"))
+                Directory.CreateDirectory("devices");
+
+            string filePath = $"devices/config.{config.DeviceId}.json";
+
+            if (System.IO.File.Exists(filePath))
+                System.IO.File.Delete(filePath);
+
+            var json = JsonConvert.SerializeObject(config);
+            StreamWriter fileStream = System.IO.File.CreateText(filePath);
+            fileStream.Write(json);
+            fileStream.Close();
+        }
+    }
 }

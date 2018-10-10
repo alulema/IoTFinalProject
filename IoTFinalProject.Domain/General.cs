@@ -37,7 +37,7 @@ namespace IoTFinalProject.Domain
                     .WithIdentity("trigger1", "group1")
                     .StartNow()
                     .WithSimpleSchedule(x => x
-                        .WithIntervalInSeconds(timeout)
+                        .WithIntervalInSeconds(5)
                         .RepeatForever())
                     .Build();
                 job.JobDataMap["timeout"] = timeout;

@@ -34,7 +34,7 @@ namespace IoTFinalProject.Domain.Hubs
         {
             try
             {
-                await Clients.All.SendAsync("ReceiveMessage", General.OnlineDevices);
+                await Clients.All.SendAsync("UpdateDeviceList", General.OnlineDevices.Values);
                 return true;
             }
             catch (Exception)

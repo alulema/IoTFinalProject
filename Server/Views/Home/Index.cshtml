@@ -2,11 +2,106 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="row">
-    <div id="divDeviceList" class="col-md-3">
-        <h2>Online Devices</h2>
+@section Scripts
+{
+    <script id="Device-Template" type="text/x-handlebars-template">
+        {{#Items}}
+            <div id="divDevice-{{device_id}}" class="well hoverwell" onclick="onDeviceClick('{{device_id}}');">
+                <table>
+                    <tr>
+                        <td><b>ID:</b></td>
+                        <td style="padding-left: 10px">{{device_id}}</td>
+                    </tr>
+                    <tr>
+                        <td><b>Type:</b></td>
+                        <td style="padding-left: 10px">{{type}}</td>
+                    </tr>
+                </table>
+            </div>
+        {{/Items}}
+    </script>
+
+    <script id="DailyPoint-Template" type="text/x-handlebars-template">
+        {{#Items}}
+            <div id="divPoint-{{id}}" class="well well-sm hoverpoint">
+                <table>
+                    <tr>
+                        <td style="width: 50px" align="right">
+                            <h3 style="margin-top: 5px; margin-bottom: 5px">{{temperature}}º</h3>
+                        </td>
+                        <td style="width: 100px">
+                            <span style="font-size: small; margin-left: 10px">{{start_hour}}:{{start_minute}} - {{end_hour}}:{{end_minute}}</span>
+                        </td>
+                        <td>
+                            <span class="glyphicon glyphicon-edit editButton" title="Edit" onclick="editPoint('{{id}}', $('#spanDevId').text());"></span>&nbsp;
+                            <span class="glyphicon glyphicon-remove removeButton" title="Remove" onclick="removePoint('{{id}}', $('#spanDevId').text());"></span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        {{/Items}}
+    </script>
+}
+
+    <div id="loadingDiv" class="loadingDiv" style="display: none">Loading&#8230;</div>
+
+    <div id="dlgEditPoint" style="display: none">
+        <div id="divEditPointContents">
+            <table style="padding: 5px">
+                <tr>
+                    <td colspan="4">
+                        <label><input type="checkbox" id="checkActive" value="true" checked="checked"/> Is Active</label>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="4" style="padding: 5px">
+                        <table style="padding: 5px">
+                            <tr>
+                                <td style="padding: 5px">
+                                    Temperature (ºF):
+                                </td>
+                                <td style="padding: 5px">
+                                    <input id="txtTemperature" type="text"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 5px">
+                        Start Time:
+                    </td>
+                    <td style="padding: 5px">
+                        <input type="text" id="startTime"/>
+                    </td>
+                    <td style="padding: 5px">
+                        End Time:
+                    </td>
+                    <td style="padding: 5px">
+                        <input type="text" id="endTime"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="4" style="padding: 5px" align="right">
+                        <button type="button" class="btn btn-primary" onclick="onDailyPointAdded();">Ok</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
     </div>
-    <div id="divDeviceDetails" class="col-md-9">
+
+    <div class="row">
+        <div class="col-md-2">
+            <h3>Online Devices</h3>
+            <div id="divDevicesList"></div>
+        </div>
+        <div id="divDeviceDetails" class="col-md-10" style="display: none">
+            <h3>Device Id: <span id="spanDevId">THE-001</span></h3>
+            <div id="divDailyPoints" class="col-md-3">
+                <h4>Daily Points (ºF)&nbsp;&nbsp;<span class="glyphicon glyphicon-plus addButton" title="Add" onclick="addPoint();"></span></h4>
+                <div id="divDailyPointList">
+                </div>
+            </div>
+        </div>
     </div>
-</div>
-<script src="~/lib/signalr/dist/browser/signalr.min.js"></script>
+    <script src="~/lib/signalr/dist/browser/signalr.min.js"></script>
