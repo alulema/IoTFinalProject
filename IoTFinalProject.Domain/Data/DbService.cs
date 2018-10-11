@@ -16,7 +16,62 @@ namespace IoTFinalProject.Domain.Data
             return conn;
         }
 
-        public static void InsertLoginRequest(ThermostatRequest item, string connString)
+        public static object GetHistoricData(HistoricRate rate, string deviceId, string connString)
+        {
+            var temperatures = new List<PlotDataPoint>();
+            var thermocoupleStatuses = new List<PlotDataPoint>();
+            MySqlConnection conn = null;
+            int minsFrom = 5;
+
+            switch (rate)
+            {
+                case HistoricRate.Back5Minutes:
+                    minsFrom = 5;
+                    break;
+                case HistoricRate.Back30Minutes:
+                    minsFrom = 30;
+                    break;
+                case HistoricRate.Back2Hours:
+                    minsFrom = 120;
+                    break;
+                case HistoricRate.Back1Day:
+                    minsFrom = 1440;
+                    break;
+                case HistoricRate.Back1Week:
+                    minsFrom = 10080;
+                    break;
+            }
+
+            conn = OpenConnection(connString);
+            var query = $"CALL GetDataSamples({minsFrom}, '{deviceId}');";
+            MySqlCommand cmd = new MySqlCommand(query, conn);
+            var reader = cmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                var item = new ThermostatRequest
+                {
+                    DeviceStatus = (string) reader[2],
+                    Measurement = Convert.ToSingle(reader[3]),
+                    Timestamp = (DateTime) reader[5]
+                };
+                
+                temperatures.Add(new PlotDataPoint(item.Measurement, item.Timestamp));
+                thermocoupleStatuses.Add(new PlotDataPoint(item.DeviceStatus == "ON" ? 1 : 0, item.Timestamp));
+            }
+
+            reader.Close();
+            if (conn != null && conn.State == ConnectionState.Open)
+                conn.Close();
+
+            return new
+            {
+                Temperatures = temperatures,
+                Statuses = thermocoupleStatuses
+            };
+        }
+
+        public static void InsertDataRequest(ThermostatRequest item, string connString)
         {
             MySqlConnection conn = null;
 
@@ -69,6 +124,5 @@ namespace IoTFinalProject.Domain.Data
 
             return items.ToArray();
         }
-
     }
 }

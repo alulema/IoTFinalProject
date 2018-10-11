@@ -7,6 +7,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IoTFinalProject", "IoTFinal
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IoTFinalProject.Domain", "..\IoTFinalProject.Domain\IoTFinalProject.Domain.csproj", "{27CA918C-B269-47C7-86AB-550B837975E0}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DDLS", "DDLS", "{9D7CF985-A303-4FAC-8F17-338978EFD688}"
+ProjectSection(SolutionItems) = preProject
+	..\DDL\CREATE_SP.sql = ..\DDL\CREATE_SP.sql
+	..\DDL\CREATE_DB.sql = ..\DDL\CREATE_DB.sql
+EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

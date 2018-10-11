@@ -1,4 +1,9 @@
-﻿var connection = new signalR.HubConnectionBuilder().withUrl("/monitorHub").build();
+﻿Date.prototype.addMinutes = function (m) {
+    this.setTime(this.getTime() + (m * 60 * 1000));
+    return this;
+};
+
+var connection = new signalR.HubConnectionBuilder().withUrl("/monitorHub").build();
 var deviceArray;
 var loadedConfig;
 
@@ -16,6 +21,7 @@ $(document).ready(function () {
     connection.on("UpdateDeviceList", onDeviceListUpdated);
     connection.start().catch(onHubConnectionError);
 
+    $("#divDeviceDetails").ejTab();
     $("#dlgEditPoint").ejDialog({
         title: "Dialog",
         showOnInit: false,
@@ -45,6 +51,14 @@ $(document).ready(function () {
     $('#startTime').ejTimePicker({width: 110});
     $('#endTime').ejTimePicker({width: 110});
     $("#daterangepick").ejDateRangePicker({width: 200});
+
+    $("#check11").ejToggleButton({
+        size: "normal",
+        showRoundedCorner: true,
+        contentType: "imageonly",
+        defaultPrefixIcon: "e-icon e-mediaplay e-uiLight",
+        activePrefixIcon: "e-icon e-mediapause e-uiLight",
+    });
 });
 
 var onDeviceListUpdated = function (json) {
@@ -176,7 +190,7 @@ var editPoint = function (pointId, deviceId) {
             }
         });
     });
-    
+
     var dlgTitle;
     switch (tmpIndex) {
         case 0: // daily point
@@ -236,7 +250,7 @@ var onDailyPointAdded = function () {
 
     var strRange = null;
     var range = weekendOption === "2" ? $("#daterangepick").ejDateRangePicker("getSelectedRange") : null;
-    
+
     if (weekendOption === "2") {
         if (range.startDate === null && range.endDate === null)
             strRange = tmpRangeHolder;
@@ -348,3 +362,142 @@ var saveConfig = function (deviceId) {
         }
     });
 };
+
+var getStatsData = function (rate, deviceId) {
+    $.ajax({
+        type: 'GET',
+        url: '/api/thermostat/gethistory?rate=' + rate + '&deviceId=' + deviceId,
+        contentType: "application/json; charset=utf-8",
+        dataType: 'json',
+        success: function (json) {
+            $.each(json.statuses, function (i, v) {
+                json.statuses[i].x = new Date(v.x);
+            });
+            $.each(json.temperatures, function (i, v) {
+                json.temperatures[i].x = new Date(v.x);
+            });
+
+            console.log(json);
+            var minSpan = 0;
+            var minInterval = 0;
+            var minType = '';
+            var extraTitle = '';
+
+            switch (rate) {
+                case 0:
+                    minSpan = -5;
+                    minInterval = 1;
+                    minType = 'Minutes';
+                    extraTitle = " (5 min)";
+                    break;
+                case 1:
+                    minSpan = -30;
+                    minInterval = 3;
+                    minType = 'Minutes';
+                    extraTitle = " (30 min)";
+                    break;
+                case 2:
+                    minSpan = -120;
+                    minInterval = 12;
+                    minType = 'Minutes';
+                    extraTitle = " (2 hrs)";
+                    break;
+                case 3:
+                    minSpan = -1440;
+                    minInterval = 144;
+                    minType = 'Minutes';
+                    extraTitle = " (1 day)";
+                    break;
+                case 4:
+                    minSpan = -10080;
+                    minInterval = 1;
+                    minType = 'Days';
+                    extraTitle = " (1 week)";
+                    break;
+            }
+
+            
+            $("#plot1").ejChart({
+                primaryXAxis: {
+                    title: {text: "Time"},
+                    range: {min: (new Date()).addMinutes(minSpan), max: new Date(), interval: minInterval},
+                    intervalType: minType,
+                    //labelFormat: 'HH:mm',
+                    valueType: 'datetime'
+                },
+                primaryYAxis: {
+                    title: {text: "Temperature (F)"},
+                    rangePadding: 'additional'
+                },
+                commonSeriesOptions: {
+                    tooltip: {
+                        visible: false
+                    }
+                },
+                series: [
+                    {
+                        points: [],
+                        name: 'Sales',
+                        type: 'line',
+                        enableAnimation: true,
+                        border: {width: 3},
+                        tooltip: {format: " Date : #point.x#  <br/> Profit : #point.y# "}
+                    }
+                ],
+                isResponsive: true,
+                load: "loadTheme",
+                title: {text: 'Thermostat Temperature' + extraTitle},
+                size: {height: "300"},
+                legend: {visible: false}
+            });
+            $("#plot2").ejChart({
+                primaryXAxis: {
+                    title: {text: "Time"},
+                    range: {min: (new Date()).addMinutes(minSpan), max: new Date(), interval: minInterval},
+                    intervalType: minType,
+                    //labelFormat: 'HH:mm',
+                    valueType: 'datetime'
+                },
+                primaryYAxis: {
+                    title: {text: "ON / OFF"},
+                    rangePadding: 'additional'
+                },
+                commonSeriesOptions: {
+                    tooltip: {
+                        visible: false
+                    }
+                },
+                series: [
+                    {
+                        points: [],
+                        name: 'Sales',
+                        type: 'line',
+                        enableAnimation: true,
+                        border: {width: 3, color : "green"},
+                        tooltip: {format: " Date : #point.x#  <br/> Profit : #point.y# "}
+                    }
+                ],
+                isResponsive: true,
+                load: "loadTheme",
+                title: {text: 'Thermocouple Status'},
+                size: {height: "300"},
+                legend: {visible: false}
+            });
+
+            var chartObj1 = $("#plot1").ejChart("instance");
+            chartObj1.model.series[0].points = json.temperatures;
+            $("#plot1").ejChart("redraw");
+
+            var chartObj2 = $("#plot2").ejChart("instance");
+            chartObj2.model.series[0].points = json.statuses;
+            $("#plot2").ejChart("redraw");
+        },
+        error: function () {
+            console.log("Error calling Thermostat API: GetDeviceConfig");
+        },
+        complete: function () {
+            //$("#divDevice-" + device_id).addClass("selectedwell");
+        }
+    });
+};
+

@@ -37,6 +37,21 @@ namespace IoTFinalProject.Controllers
             }
         }
 
+        [HttpGet("gethistory")]
+        public object GetHistory(HistoricRate rate, string deviceId)
+        {
+            try
+            {
+                var data = DbService.GetHistoricData(rate, deviceId, _connString);
+                return data;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError("GetHistoricData() THROWS AN ERROR", e);
+                throw;
+            }
+        }
+
         [HttpPost]
         public void Post([FromBody] ThermostatRequestViewModel request)
         {
@@ -51,7 +66,7 @@ namespace IoTFinalProject.Controllers
 
             try
             {
-                DbService.InsertLoginRequest(item, _connString);
+                DbService.InsertDataRequest(item, _connString);
             }
             catch (Exception e)
             {
@@ -101,7 +116,7 @@ namespace IoTFinalProject.Controllers
         }
 
         [HttpPost("savedeviceconfig")]
-        public bool GetDeviceConfig(DeviceConfiguration config)
+        public bool SaveDeviceConfig(DeviceConfiguration config)
         {
             if (!Directory.Exists("devices"))
                 Directory.CreateDirectory("devices");

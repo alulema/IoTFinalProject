@@ -46,7 +46,7 @@
 <div id="loadingDiv" class="loadingDiv" style="display: none">Loading&#8230;</div>
 
 <div id="dlgChooseDate" style="display: none">
-    <input id="daterangepick" type="text" />
+    <input id="daterangepick" type="text"/>
     <button type="button" class="btn btn-primary" style="margin-top: 10px" onclick="onSelectedRange();">Ok</button>
 </div>
 
@@ -106,26 +106,74 @@
         <div id="divDevicesList"></div>
     </div>
     <div id="divDeviceDetails" class="col-md-10" style="display: none">
-        <h3>Device Id: <span id="spanDevId">THE-001</span><span class="glyphicon glyphicon-floppy-save addButton" title="Save" onclick="saveConfig($('#spanDevId').text());"></span></h3>
-        <div id="divDailyPoints" class="col-md-3">
-            <h4>Daily Points (ºF)<span class="glyphicon glyphicon-plus addButton" title="Add" onclick="addDailyPoint();"></span></h4>
-            <div id="divDailyPointList">
+        <ul>
+            <li>
+                <a href="#configuration">Configuration</a>
+            </li>
+            <li>
+                <a href="#stats">Statistics</a>
+            </li>
+        </ul>
+        <div id="configuration">
+            <div class="row">
+                <div class="col-md-10">
+                    <h3>Device Id: <span id="spanDevId">THE-001</span><span class="glyphicon glyphicon-floppy-save addButton" title="Save" onclick="saveConfig($('#spanDevId').text());"></span></h3>
+                </div>
+                <div id="divDailyPoints" class="col-md-3">
+                    <h4>Daily Points (ºF)<span class="glyphicon glyphicon-plus addButton" title="Add" onclick="addDailyPoint();"></span></h4>
+                    <div id="divDailyPointList">
+                    </div>
+                </div>
+                <div id="divWeekendPoints" class="col-md-3">
+                    <h4>Weekend Points (ºF)</h4>
+                    <h5>Saturday:<span class="glyphicon glyphicon-plus addButton" title="Add" onclick="addWeekendPoint(0);"></span></h5>
+                    <div id="divSaturdayPointList">
+                    </div>
+                    <h5>Sunday:&nbsp;&nbsp;<span class="glyphicon glyphicon-plus addButton" title="Add" onclick="addWeekendPoint(1);"></span></h5>
+                    <div id="divSundayPointList">
+                    </div>
+                </div>
+                <div id="divSpecialDaysPoints" class="col-md-4">
+                    <h4>Special Days Points (ºF)<span class="glyphicon glyphicon-plus addButton" title="Add" onclick="addDatesPoint();"></span></h4>
+                    <div id="divSpecialDaysPointList">
+                    </div>
+                </div>
             </div>
         </div>
-        <div id="divWeekendPoints" class="col-md-3">
-            <h4>Weekend Points (ºF)</h4>
-            <h5>Saturday:<span class="glyphicon glyphicon-plus addButton" title="Add" onclick="addWeekendPoint(0);"></span></h5>
-            <div id="divSaturdayPointList">
-            </div>
-            <h5>Sunday:&nbsp;&nbsp;<span class="glyphicon glyphicon-plus addButton" title="Add" onclick="addWeekendPoint(1);"></span></h5>
-            <div id="divSundayPointList">
-            </div>
-        </div>
-        <div id="divSpecialDaysPoints" class="col-md-4">
-            <h4>Special Days Points (ºF)<span class="glyphicon glyphicon-plus addButton" title="Add" onclick="addDatesPoint();"></span></h4>
-            <div id="divSpecialDaysPointList">
+        <div id="stats">
+            <div class="row">
+                <table>
+                    <tr>
+                        <td>
+                            <a href="javascript:getStatsData(0, $('#spanDevId').text());">5 min</a>&nbsp;&nbsp;|&nbsp;&nbsp;
+                        </td>
+                        <td>
+                            <a href="javascript:getStatsData(1, $('#spanDevId').text());">30 min</a>&nbsp;&nbsp;|&nbsp;&nbsp;
+                        </td>
+                        <td>
+                            <a href="javascript:getStatsData(2, $('#spanDevId').text());">2 hrs</a>&nbsp;&nbsp;|&nbsp;&nbsp;
+                        </td>
+                        <td>
+                            <a href="javascript:getStatsData(3, $('#spanDevId').text());">1 day</a>&nbsp;&nbsp;|&nbsp;&nbsp;
+                        </td>
+                        <td>
+                            <a href="javascript:getStatsData(4, $('#spanDevId').text());">1 wk</a>
+                        </td>
+                        <td>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Auto-refresh&nbsp;
+                        </td>
+                        <td>
+                            <input type="checkbox" id="check11"/>
+                            <label for="check11">Toggle</label>
+                        </td>
+                    </tr>
+                </table>
+                <div id="plot1"></div>
+                <div id="plot2"></div>
             </div>
         </div>
     </div>
 </div>
-<script src="~/lib/signalr/dist/browser/signalr.min.js"></script>
+
+<script src="~/lib/signalr/dist/browser/signalr.min.js">
+</script>
