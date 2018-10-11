@@ -88,7 +88,7 @@
             </tr>
             <tr>
                 <td colspan="4" style="padding: 5px" align="right">
-                    <input type="hidden" id="hdnDeviceId"/>
+                    <input type="hidden" id="hdnPointId"/>
                     <input type="hidden" id="hdnWeekendOption"/>
                     <button type="button" class="btn btn-primary" onclick="onDailyPointAdded();">Ok</button>
                 </td>
@@ -106,7 +106,7 @@
         <div id="divDevicesList"></div>
     </div>
     <div id="divDeviceDetails" class="col-md-10" style="display: none">
-        <h3>Device Id: <span id="spanDevId">THE-001</span></h3>
+        <h3>Device Id: <span id="spanDevId">THE-001</span><span class="glyphicon glyphicon-floppy-save addButton" title="Save" onclick="saveConfig($('#spanDevId').text());"></span></h3>
         <div id="divDailyPoints" class="col-md-3">
             <h4>Daily Points (ºF)<span class="glyphicon glyphicon-plus addButton" title="Add" onclick="addDailyPoint();"></span></h4>
             <div id="divDailyPointList">

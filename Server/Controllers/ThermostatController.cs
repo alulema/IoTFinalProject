@@ -101,7 +101,7 @@ namespace IoTFinalProject.Controllers
         }
 
         [HttpPost("savedeviceconfig")]
-        public void GetDeviceConfig(DeviceConfiguration config)
+        public bool GetDeviceConfig(DeviceConfiguration config)
         {
             if (!Directory.Exists("devices"))
                 Directory.CreateDirectory("devices");
@@ -115,6 +115,8 @@ namespace IoTFinalProject.Controllers
             StreamWriter fileStream = System.IO.File.CreateText(filePath);
             fileStream.Write(json);
             fileStream.Close();
+
+            return true;
         }
     }
 }

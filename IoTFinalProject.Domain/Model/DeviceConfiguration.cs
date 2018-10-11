@@ -20,7 +20,7 @@ namespace IoTFinalProject.Domain.Model
         public List<DailyTemperature> DailyPoints { get; private set; }
         [DataMember(Name = "weekend_points")]
         public List<DailyTemperature> WeekendPoints { get; private set; }
-        [DataMember(Name = "special_days")]
+        [DataMember(Name = "special_dates")]
         public List<DailyTemperature> SpecialDayPoints { get; private set; }
     }
 
@@ -50,8 +50,8 @@ namespace IoTFinalProject.Domain.Model
         public string EndTime { get; set; }
         [DataMember(Name = "is_active")]
         public bool IsActive { get; set; }
-        [DataMember(Name = "selected_date")]
-        public DateTime? SelectedDate { get; set; }
+        [DataMember(Name = "selected_dates")]
+        public string SelectedDates { get; set; }
         [DataMember(Name = "is_saturday")]
         public bool IsSaturday { get; set; }
         [DataMember(Name = "is_sunday")]

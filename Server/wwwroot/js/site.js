@@ -10,7 +10,7 @@ $(document)
         $('#loadingDiv').hide();
     });
 
-$(document).ready(function() {
+$(document).ready(function () {
     connection = new signalR.HubConnectionBuilder().withUrl("/monitorHub").build();
 
     connection.on("UpdateDeviceList", onDeviceListUpdated);
@@ -36,15 +36,15 @@ $(document).ready(function() {
     });
 
     $("#txtTemperature").ejNumericTextbox({
-            name: "numeric",
-            value: 65,
-            minValue: 40,
-            maxValue: 125,
-            width: 65
-        });
+        name: "numeric",
+        value: 65,
+        minValue: 40,
+        maxValue: 125,
+        width: 65
+    });
     $('#startTime').ejTimePicker({width: 110});
     $('#endTime').ejTimePicker({width: 110});
-    $("#daterangepick").ejDateRangePicker({width:200});
+    $("#daterangepick").ejDateRangePicker({width: 200});
 });
 
 var onDeviceListUpdated = function (json) {
@@ -69,7 +69,7 @@ var onHubConnectionError = function (err) {
     return console.error(err.toString());
 };
 
-var onDeviceClick = function(device_id) {
+var onDeviceClick = function (device_id) {
     $.ajax({
         type: 'GET',
         url: '/api/thermostat/getdeviceconfig?deviceId=' + device_id,
@@ -79,20 +79,19 @@ var onDeviceClick = function(device_id) {
         error: function () {
             console.log("Error calling Thermostat API: GetDeviceConfig");
         },
-        complete: function() {
-            $("#divDevice-" + device_id).addClass( "selectedwell" );
+        complete: function () {
+            $("#divDevice-" + device_id).addClass("selectedwell");
         }
-
     });
 };
 
-var onGetDeviceConfigSuccess = function(json) {
+var onGetDeviceConfigSuccess = function (json) {
     loadedConfig = json;
     $("#divDeviceDetails").show();
     var satPoints = new Array();
     var sunPoints = new Array();
-    
-    $.each(loadedConfig.weekend_points, function(i, v) {
+
+    $.each(loadedConfig.weekend_points, function (i, v) {
         if (v.is_saturday)
             satPoints.push(v);
         if (v.is_sunday)
@@ -101,9 +100,10 @@ var onGetDeviceConfigSuccess = function(json) {
     buildDailyPoints("divDailyPointList", loadedConfig.daily_points);
     buildDailyPoints("divSaturdayPointList", satPoints);
     buildDailyPoints("divSundayPointList", sunPoints);
+    buildDailyPoints("divSpecialDaysPointList", loadedConfig.special_dates);
 };
 
-var addPoint = function(title, weekendOption) {
+var addPoint = function (title, weekendOption) {
     $('#checkActive').prop('checked', true);
     $("#txtTemperature").ejNumericTextbox({
         name: "numeric",
@@ -113,67 +113,94 @@ var addPoint = function(title, weekendOption) {
         width: 65
     });
     $('#startTime').ejTimePicker({
-        value : "12:00 AM",
+        value: "12:00 AM",
         width: 110
     });
     $('#endTime').ejTimePicker({
-        value : "12:00 AM",
+        value: "12:00 AM",
         width: 110
     });
-    $("#hdnDeviceId").val("");
+    $("#hdnPointId").val("");
     $("#hdnWeekendOption").val(weekendOption);
 
-    $("#dlgEditPoint").ejDialog("setTitle",title);
+    $("#dlgEditPoint").ejDialog("setTitle", title);
     $("#dlgEditPoint").ejDialog("open");
 };
 
-var addDailyPoint = function() {
+var addDailyPoint = function () {
     addPoint("Add Daily Point", "");
 };
 
-var addWeekendPoint = function(option) {
+var addWeekendPoint = function (option) {
     addPoint("Add Point on " + (option === 0 ? "saturday" : "sunday"), option);
 };
 
-var editPoint = function(pointId, deviceId) {
+var tmpRangeHolder;
+
+var editPoint = function (pointId, deviceId) {
     // $.each(deviceArray, function (i, v) {
     //     if (v.device_id === deviceId) {
     //         console.log(v);
     //         return false;
     //     }
     // });
-    $.each(loadedConfig.daily_points, function (i, v) {
-        if (v.id === pointId) {
-            $('#checkActive').prop('checked', v.is_active);
-            $("#txtTemperature").ejNumericTextbox({
+    var tmpIndex;
+    var tmpArray = [loadedConfig.daily_points, loadedConfig.weekend_points, loadedConfig.special_dates];
+    $.each(tmpArray, function (i, v) {
+        $.each(v, function (_i, _v) {
+            if (_v.id === pointId) {
+                tmpIndex = i;
+                if (i === 1) // is weekend point
+                    $("#hdnWeekendOption").val(_v.is_saturday ? "0" : "1");
+                if (i === 2)
+                    tmpRangeHolder = _v.selected_dates;
+
+                $("#hdnPointId").val(_v.id);
+                $('#checkActive').prop('checked', _v.is_active);
+                $("#txtTemperature").ejNumericTextbox({
                     name: "numeric",
-                    value: v.temperature,
+                    value: _v.temperature,
                     minValue: 40,
                     maxValue: 125,
                     width: 65
                 });
-            $('#startTime').ejTimePicker({
-                value : v.start_time,
-                width: 110
-            });
-            $('#endTime').ejTimePicker({
-                value : v.end_time,
-                width: 110
-            });
-            $("#hdnDeviceId").val(pointId);
-            return false;
-        }
+                $('#startTime').ejTimePicker({
+                    value: _v.start_time,
+                    width: 110
+                });
+                $('#endTime').ejTimePicker({
+                    value: _v.end_time,
+                    width: 110
+                });
+                return false;
+            }
+        });
     });
     
-    $("#dlgEditPoint").ejDialog("setTitle","Edit Daily Point");
+    var dlgTitle;
+    switch (tmpIndex) {
+        case 0: // daily point
+            dlgTitle = "Edit Daily Point";
+            $("#hdnWeekendOption").val("");
+            break;
+        case 1: // weekend point
+            dlgTitle = "Edit Weekend Point";
+            break;
+        case 2: // special days point
+            dlgTitle = "Edit Special Days Point: " + tmpRangeHolder;
+            $("#hdnWeekendOption").val("2");
+            break;
+    }
+
+    $("#dlgEditPoint").ejDialog("setTitle", dlgTitle);
     $("#dlgEditPoint").ejDialog("open");
 };
 
-var addDatesPoint = function() {
+var addDatesPoint = function () {
     $("#dlgChooseDate").ejDialog("open");
 }
 
-var removePoint = function(pointId, deviceId) {
+var removePoint = function (pointId, deviceId) {
     $.each(loadedConfig.daily_points, function (i, v) {
         if (v.id === pointId) {
             loadedConfig.daily_points.splice(i, 1);
@@ -183,15 +210,15 @@ var removePoint = function(pointId, deviceId) {
     $("#divPoint-" + pointId).remove();
 };
 
-var onDailyPointAdded = function() {
-    var isNew = $("#hdnDeviceId").val() === "";
+var onDailyPointAdded = function () {
+    var isNew = $("#hdnPointId").val() === "";
     var weekendOption = $("#hdnWeekendOption").val();
     var temperature = $("#txtTemperature").ejNumericTextbox("getValue");
     var startTime = $("#startTime").ejTimePicker("getValue");
     var endTime = $("#endTime").ejTimePicker("getValue");
-    
+
     var startParts = startTime.split(' ');
-    var startTimeParts =startParts[0].split(':');
+    var startTimeParts = startParts[0].split(':');
     var startHour = parseInt(startTimeParts[0]);
     startHour += startParts[1] === 'PM' ? (startHour === 12 ? 0 : 12) : (startHour === 12 ? -12 : 0);
     var startMinute = parseInt(startTimeParts[1]);
@@ -201,14 +228,24 @@ var onDailyPointAdded = function() {
     var endHour = parseInt(endTimeParts[0]);
     endHour += endParts[1] === 'PM' ? (endHour === 12 ? 0 : 12) : 0;
     var endMinute = parseInt(endTimeParts[1]);
-    
+
     if (((endHour * 100) + endMinute) <= ((startHour * 100) + startMinute)) {
         alert("End time can't be greater or equal than start time");
         return;
     }
+
+    var strRange = null;
+    var range = weekendOption === "2" ? $("#daterangepick").ejDateRangePicker("getSelectedRange") : null;
     
+    if (weekendOption === "2") {
+        if (range.startDate === null && range.endDate === null)
+            strRange = tmpRangeHolder;
+        else
+            strRange = formatDate(range.startDate) + " - " + formatDate(range.endDate);
+    }
+
     var point = {
-        id: isNew ? generateId() : $("#hdnDeviceId").val(),
+        id: isNew ? generateId() : $("#hdnPointId").val(),
         temperature: temperature,
         start_hour: ("0" + startHour).slice(-2),
         start_minute: ("0" + startMinute).slice(-2),
@@ -219,36 +256,52 @@ var onDailyPointAdded = function() {
         is_active: $('#checkActive').prop('checked'),
         is_saturday: weekendOption === "" ? false : (weekendOption === "0"),
         is_sunday: weekendOption === "" ? false : (weekendOption === "1"),
-        selected_date: null
+        selected_dates: strRange
     };
-    
+
     if (isNew) {
         if (weekendOption === "")
             loadedConfig.daily_points.push(point);
-        else
+        else if (weekendOption === "0" || weekendOption === "1")
             loadedConfig.weekend_points.push(point);
+        else
+            loadedConfig.special_dates.push(point);
     }
-    else
+    else {
         $.each(loadedConfig.daily_points, function (i, v) {
             if (v.id === point.id) {
-                if (weekendOption === "")
-                    loadedConfig.daily_points[i] = point;
-                else
-                    loadedConfig.weekend_points[i] = point;
+                loadedConfig.daily_points[i] = point;
                 return false;
             }
         });
-
-    if (weekendOption === "")
-        buildDailyPoints("divDailyPointList", loadedConfig.daily_points);
-    else {
-        var wPoints = new Array();
-        $.each(loadedConfig.weekend_points, function(i, v) {
-            if ((weekendOption === "0" && v.is_saturday) || (weekendOption === "1" && v.is_sunday))
-                wPoints.push(v);
+        $.each(loadedConfig.weekend_points, function (i, v) {
+            if (v.id === point.id) {
+                loadedConfig.weekend_points[i] = point;
+                return false;
+            }
         });
-        buildDailyPoints((weekendOption === "0" ? "divSaturdayPointList" : "divSundayPointList"), wPoints);
+        $.each(loadedConfig.special_dates, function (i, v) {
+            if (v.id === point.id) {
+                loadedConfig.special_dates[i] = point;
+                return false;
+            }
+        });
     }
+
+    var satPoints = new Array();
+    var sunPoints = new Array();
+
+    $.each(loadedConfig.weekend_points, function (i, v) {
+        if (v.is_saturday)
+            satPoints.push(v);
+        if (v.is_sunday)
+            sunPoints.push(v);
+    });
+
+    buildDailyPoints("divDailyPointList", loadedConfig.daily_points);
+    buildDailyPoints("divSaturdayPointList", satPoints);
+    buildDailyPoints("divSundayPointList", sunPoints);
+    buildDailyPoints("divSpecialDaysPointList", loadedConfig.special_dates);
 
     $("#dlgEditPoint").ejDialog("close");
 };
@@ -263,7 +316,7 @@ var generateId = function () {
     return text;
 };
 
-var buildDailyPoints = function(divElem, json) {
+var buildDailyPoints = function (divElem, json) {
     var source = $("#DailyPoint-Template").html();
     var template = Handlebars.compile(source);
     $("#" + divElem).html("");
@@ -274,6 +327,24 @@ var buildDailyPoints = function(divElem, json) {
 var onSelectedRange = function () {
     var range = $("#daterangepick").ejDateRangePicker("getSelectedRange");
     $("#dlgChooseDate").ejDialog("close");
-    addPoint("Add Point Details", "");
+    addPoint("Add Point Details: " + formatDate(range.startDate) + " - " + formatDate(range.endDate), 2);
+};
 
+var formatDate = function (date) {
+    return (date.getMonth() + 1) + '/' + date.getDate() + '/' + date.getFullYear()
+};
+
+var saveConfig = function (deviceId) {
+    $.ajax({
+        type: 'POST',
+        url: '/api/thermostat/savedeviceconfig',
+        contentType: "application/json; charset=utf-8",
+        data: JSON.stringify(loadedConfig),
+        error: function () {
+            console.log("Error calling Thermostat API: SaveDeviceConfig");
+        },
+        complete: function () {
+            $("#divDevice-" + deviceId).addClass("selectedwell");
+        }
+    });
 };
