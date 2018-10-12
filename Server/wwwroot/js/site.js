@@ -2,6 +2,10 @@
     this.setTime(this.getTime() + (m * 60 * 1000));
     return this;
 };
+Date.prototype.addSeconds = function (s) {
+    this.setTime(this.getTime() + (s * 1000));
+    return this;
+};
 
 var connection = new signalR.HubConnectionBuilder().withUrl("/monitorHub").build();
 var deviceArray;
@@ -58,8 +62,35 @@ $(document).ready(function () {
         contentType: "imageonly",
         defaultPrefixIcon: "e-icon e-mediaplay e-uiLight",
         activePrefixIcon: "e-icon e-mediapause e-uiLight",
+        click: "onAutoRefreshClick"
     });
 });
+
+var autoIsOn = false;
+var x;
+var onAutoRefreshClick = function() {
+    if (autoIsOn)
+        clearInterval(x);
+    else {
+        var countDownDate = (new Date()).addSeconds(5).getTime();
+        x = setInterval(function () {
+
+            // Get todays date and time
+            var now = new Date().getTime();
+
+            // Find the distance between now and the count down date
+            var distance = countDownDate - now;
+
+            // If the count down is over, write some text 
+            if (distance < 0) {
+                getStatsData(pickRate, $('#spanDevId').text(), false);
+                countDownDate = (new Date()).addSeconds(5).getTime();
+            }
+        }, 1000);
+    }
+    
+    autoIsOn = !autoIsOn;
+};
 
 var onDeviceListUpdated = function (json) {
     if (!_.isEqual(deviceArray, json)) {
@@ -363,11 +394,14 @@ var saveConfig = function (deviceId) {
     });
 };
 
-var getStatsData = function (rate, deviceId) {
+var pickRate = 0;
+var getStatsData = function (rate, deviceId, isGlobal) {
+    pickRate = rate;
     $.ajax({
         type: 'GET',
         url: '/api/thermostat/gethistory?rate=' + rate + '&deviceId=' + deviceId,
         contentType: "application/json; charset=utf-8",
+        global: isGlobal,
         dataType: 'json',
         success: function (json) {
             $.each(json.statuses, function (i, v) {
