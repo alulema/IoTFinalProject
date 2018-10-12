@@ -50,7 +50,6 @@ namespace IoTFinalProject
                 app.UseHsts();
             }
 
-            app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseCookiePolicy();
             app.UseSignalR(routes =>

@@ -21,3 +21,6 @@ BEGIN
   END IF;
 END //
 DELIMITER ;
+
+# example
+CALL GetDataSamples(1, 'THE-001');

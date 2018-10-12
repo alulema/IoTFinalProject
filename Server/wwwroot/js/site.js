@@ -88,7 +88,7 @@ var onAutoRefreshClick = function() {
             }
         }, 1000);
     }
-    
+
     autoIsOn = !autoIsOn;
 };
 
@@ -404,6 +404,7 @@ var getStatsData = function (rate, deviceId, isGlobal) {
         global: isGlobal,
         dataType: 'json',
         success: function (json) {
+            var offset = new Date().getTimezoneOffset() * (-1);
             $.each(json.statuses, function (i, v) {
                 json.statuses[i].x = new Date(v.x);
             });
@@ -450,13 +451,11 @@ var getStatsData = function (rate, deviceId, isGlobal) {
                     break;
             }
 
-            
             $("#plot1").ejChart({
                 primaryXAxis: {
                     title: {text: "Time"},
-                    range: {min: (new Date()).addMinutes(minSpan), max: new Date(), interval: minInterval},
+                    range: {min: new Date().addMinutes(minSpan), max: new Date(), interval: minInterval},
                     intervalType: minType,
-                    //labelFormat: 'HH:mm',
                     valueType: 'datetime'
                 },
                 primaryYAxis: {
@@ -481,15 +480,15 @@ var getStatsData = function (rate, deviceId, isGlobal) {
                 isResponsive: true,
                 load: "loadTheme",
                 title: {text: 'Thermostat Temperature' + extraTitle},
+                palette: ["blue"],
                 size: {height: "300"},
                 legend: {visible: false}
             });
             $("#plot2").ejChart({
                 primaryXAxis: {
                     title: {text: "Time"},
-                    range: {min: (new Date()).addMinutes(minSpan), max: new Date(), interval: minInterval},
+                    range: {min: new Date().addMinutes(minSpan), max: new Date(), interval: minInterval},
                     intervalType: minType,
-                    //labelFormat: 'HH:mm',
                     valueType: 'datetime'
                 },
                 primaryYAxis: {
@@ -534,4 +533,3 @@ var getStatsData = function (rate, deviceId, isGlobal) {
         }
     });
 };
-

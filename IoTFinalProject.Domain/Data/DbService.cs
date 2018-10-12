@@ -56,8 +56,8 @@ namespace IoTFinalProject.Domain.Data
                     Timestamp = (DateTime) reader[5]
                 };
                 
-                temperatures.Add(new PlotDataPoint(item.Measurement, item.Timestamp));
-                thermocoupleStatuses.Add(new PlotDataPoint(item.DeviceStatus == "ON" ? 1 : 0, item.Timestamp));
+                temperatures.Add(new PlotDataPoint(item.Measurement, item.Timestamp.ToUniversalTime()));
+                thermocoupleStatuses.Add(new PlotDataPoint(item.DeviceStatus == "ON" ? 1 : 0, item.Timestamp.ToUniversalTime()));
             }
 
             reader.Close();
