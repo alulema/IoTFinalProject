@@ -11,11 +11,12 @@
 #include "tc_httpclient.h"
 #include "tc_state.h"
 
-static const char*  URL             = "http://localhost:5000/api/thermostat";
-static const char*  URL_ONLINE      = "http://localhost:5000/api/thermostat/online";
-static const char*  TEMP_FILENAME   = "/tmp/temp";
-static const char*  STATE_FILENAME  = "/tmp/status";
-static const char*  WORKING_DIR     = "/";
+static const char *URL = "http://52.67.91.154:5000/api/thermostat";
+static const char *URL_ONLINE = "http://52.67.91.154:5000/api/thermostat/online";
+static const char *URL_GETCONFIG = "http://52.67.91.154:5000/api/thermostat/getdeviceconfig?deviceId=";
+static const char *TEMP_FILENAME = "/tmp/temp";
+static const char *STATE_FILENAME = "/tmp/status";
+static const char *WORKING_DIR = "/";
 
 /**
  * If we exit the process, we want to sent information on
@@ -45,24 +46,45 @@ int main() {
     strcat(online_request, UNIT);
     strcat(online_request, "\", \"type\": \"Thermostat\" }");
 
-    send_post(online_request, URL_ONLINE);
+    while (1) {
+        send_post(online_request, URL_ONLINE);
 
-    // 2. send enqueued data to cloud to indicate it is online
-    // Read the heater state.
-    tc_heater_state_t heater_state = OFF;
-    char* temperature;
-    tc_error_t err = tc_read_state(STATE_FILENAME, &heater_state);
-    tc_error_t err2 = tc_read_temperature(TEMP_FILENAME, &temperature);
-    strtok(temperature, "\n");
+        // 2. send enqueued data to cloud to indicate it is online
+        // Read the heater state.
+        tc_heater_state_t heater_state = OFF;
+        char *temperature;
+        tc_error_t err = tc_read_state(STATE_FILENAME, &heater_state);
+        tc_error_t err2 = tc_read_temperature(TEMP_FILENAME, &temperature);
+        strtok(temperature, "\n");
 
-    if (err != OK) {
-        _exit_process(err);
+        if (err != OK) {
+            _exit_process(err);
+        }
+
+        //char * post_data_request = create_post_data_request(DEVICE_ID, UNIT, heater_state, temperature);
+        char post_data_request[200];
+        strcpy(post_data_request, "{ \"id\": \"");
+        strcat(post_data_request, DEVICE_ID);
+        strcat(post_data_request, "\", \"status\": \"");
+        strcat(post_data_request, heater_state == ON ? "ON" : "OFF");
+        strcat(post_data_request, "\", \"measurement\": ");
+        strcat(post_data_request, temperature);
+        strcat(post_data_request, ", \"unit\": \"");
+        strcat(post_data_request, UNIT);
+        strcat(post_data_request, "\" }");
+
+        send_post(post_data_request, URL);
+
+        // 3. read configs from cloud
+        char get_config_url[100];
+        strcpy(get_config_url, URL_GETCONFIG);
+        strcat(get_config_url, DEVICE_ID);
+
+        char *tst = send_get(get_config_url);
+        printf("%s", tst);
+        sleep(1);
     }
 
-    char * post_data_request = create_post_data_request(DEVICE_ID, UNIT, heater_state, temperature);
-    send_post(post_data_request, URL);
-
-    // 3. read configs from cloud
     // 4. if configs are new, then overwrite
     // 5. write configs in local
     // 6. send flag to indicate it was configured
