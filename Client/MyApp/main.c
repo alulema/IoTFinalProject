@@ -81,7 +81,8 @@ int main() {
         strcat(get_config_url, DEVICE_ID);
 
         char *tst = send_get(get_config_url);
-        printf("%s", tst);
+
+        tc_write_config(tst);
         sleep(1);
     }
 
