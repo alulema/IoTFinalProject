@@ -52,8 +52,14 @@ $(document).ready(function () {
         maxValue: 125,
         width: 65
     });
-    $('#startTime').ejTimePicker({width: 110});
-    $('#endTime').ejTimePicker({width: 110});
+    $('#startTime').ejTimePicker({
+        width: 110,
+        interval : 15
+    });
+    $('#endTime').ejTimePicker({
+        width: 110,
+        interval : 15
+    });
     $("#daterangepick").ejDateRangePicker({width: 200});
 
     $("#check11").ejToggleButton({
@@ -183,12 +189,6 @@ var addWeekendPoint = function (option) {
 var tmpRangeHolder;
 
 var editPoint = function (pointId, deviceId) {
-    // $.each(deviceArray, function (i, v) {
-    //     if (v.device_id === deviceId) {
-    //         console.log(v);
-    //         return false;
-    //     }
-    // });
     var tmpIndex;
     var tmpArray = [loadedConfig.daily_points, loadedConfig.weekend_points, loadedConfig.special_dates];
     $.each(tmpArray, function (i, v) {
@@ -380,6 +380,9 @@ var formatDate = function (date) {
 };
 
 var saveConfig = function (deviceId) {
+    var timeoffset = new Date().getTimezoneOffset();
+    loadedConfig.timeoffset = timeoffset;
+
     $.ajax({
         type: 'POST',
         url: '/api/thermostat/savedeviceconfig',
@@ -408,7 +411,6 @@ var getStatsData = function (rate, deviceId, isGlobal) {
         global: isGlobal,
         dataType: 'json',
         success: function (json) {
-            var offset = new Date().getTimezoneOffset() * (-1);
             $.each(json.statuses, function (i, v) {
                 json.statuses[i].x = new Date(v.x);
             });
@@ -416,7 +418,6 @@ var getStatsData = function (rate, deviceId, isGlobal) {
                 json.temperatures[i].x = new Date(v.x);
             });
 
-            console.log(json);
             var minSpan = 0;
             var minInterval = 0;
             var minType = '';
@@ -455,9 +456,11 @@ var getStatsData = function (rate, deviceId, isGlobal) {
                     break;
             }
 
+            var split = new Date().toString().split(" ");
+
             $("#plot1").ejChart({
                 primaryXAxis: {
-                    title: {text: "Time"},
+                    title: {text: "Time (" + split[5] + ")"},
                     range: {min: new Date().addMinutes(minSpan), max: new Date(), interval: minInterval},
                     intervalType: minType,
                     valueType: 'datetime'
@@ -490,7 +493,7 @@ var getStatsData = function (rate, deviceId, isGlobal) {
             });
             $("#plot2").ejChart({
                 primaryXAxis: {
-                    title: {text: "Time"},
+                    title: {text: "Time (" + split[5] + ")"},
                     range: {min: new Date().addMinutes(minSpan), max: new Date(), interval: minInterval},
                     intervalType: minType,
                     valueType: 'datetime'
