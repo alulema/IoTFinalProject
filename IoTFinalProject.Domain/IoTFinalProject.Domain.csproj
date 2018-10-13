@@ -11,14 +11,12 @@
       <PackageReference Include="Quartz">
         <Version>3.0.7</Version>
       </PackageReference>
+	  <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.1" />
     </ItemGroup>
 
     <ItemGroup>
       <Reference Include="Microsoft.AspNetCore.SignalR.Core">
         <HintPath>..\..\..\..\..\..\program files\dotnet\sdk\NuGetFallbackFolder\microsoft.aspnetcore.signalr.core\1.0.1\lib\netstandard2.0\Microsoft.AspNetCore.SignalR.Core.dll</HintPath>
-      </Reference>
-      <Reference Include="Microsoft.AspNetCore.SignalR.Core, Version=1.0.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
-        <HintPath>..\..\..\..\..\..\usr\share\dotnet\sdk\NuGetFallbackFolder\microsoft.aspnetcore.signalr.core\1.0.1\lib\netstandard2.0\Microsoft.AspNetCore.SignalR.Core.dll</HintPath>
       </Reference>
     </ItemGroup>
 

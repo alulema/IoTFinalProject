@@ -17,6 +17,7 @@ namespace IoTFinalProject.Controllers
     {
         private readonly ILogger _logger;
         private readonly string _connString = Startup.Configuration.GetConnectionString("DefaultDatabase");
+        private readonly string _defaultTempLevel = Startup.Configuration["DefaultTemperatureLevel"];
 
         public ThermostatController(ILogger<ThermostatController> logger)
         {
@@ -53,7 +54,7 @@ namespace IoTFinalProject.Controllers
         }
 
         [HttpPost]
-        public void Post([FromBody] ThermostatRequestViewModel request)
+        public bool Post([FromBody] ThermostatRequestViewModel request)
         {
             var item = new ThermostatRequest
             {
@@ -67,6 +68,8 @@ namespace IoTFinalProject.Controllers
             try
             {
                 DbService.InsertDataRequest(item, _connString);
+                var activateIt = Rules.DecideActivation(item, float.Parse(_defaultTempLevel));
+                return activateIt;
             }
             catch (Exception e)
             {
@@ -88,31 +91,7 @@ namespace IoTFinalProject.Controllers
         [HttpGet("getdeviceconfig")]
         public DeviceConfiguration GetDeviceConfig(string deviceId)
         {
-            if (!Directory.Exists("devices"))
-                Directory.CreateDirectory("devices");
-
-            string filePath = $"devices/config.{deviceId}.json";
-
-            DeviceConfiguration config;
-
-            if (!System.IO.File.Exists(filePath))
-            {
-                config = new DeviceConfiguration
-                {
-                    DeviceId = deviceId
-                };
-                var json = JsonConvert.SerializeObject(config);
-                StreamWriter fileStream = System.IO.File.CreateText(filePath);
-                fileStream.Write(json);
-                fileStream.Close();
-            }
-            else
-            {
-                var json = System.IO.File.ReadAllText(filePath);
-                config = JsonConvert.DeserializeObject<DeviceConfiguration>(json);
-            }
-
-            return config;
+            return Rules.GetDeviceConfig(deviceId);
         }
 
         [HttpPost("savedeviceconfig")]
