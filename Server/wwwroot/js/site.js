@@ -376,7 +376,7 @@ var onSelectedRange = function () {
 };
 
 var formatDate = function (date) {
-    return (date.getMonth() + 1) + '/' + date.getDate() + '/' + date.getFullYear()
+    return (date.getMonth() + 1) + '/' + date.getDate() + '/' + date.getFullYear();
 };
 
 var saveConfig = function (deviceId) {
@@ -385,6 +385,9 @@ var saveConfig = function (deviceId) {
         url: '/api/thermostat/savedeviceconfig',
         contentType: "application/json; charset=utf-8",
         data: JSON.stringify(loadedConfig),
+        success: function() {
+            toastr.success("Configuration has been saved!");
+        },
         error: function () {
             console.log("Error calling Thermostat API: SaveDeviceConfig");
         },
