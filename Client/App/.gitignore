@@ -1,5 +1,6 @@
 *.o
 tcsimd
 tcsimd_arm
+S80tcsimd_arm
 cmake-build-debug/
 .idea/

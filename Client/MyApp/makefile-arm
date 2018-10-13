@@ -9,7 +9,7 @@ LIBS=-lcurl -uClibc -lc
 
 SRC=main.c tc_state.c tc_error.c tc_config.c tc_httpclient.c tc_json.c
 OBJ=$(SRC:.c=.o)
-MAIN=main_controller_arm
+MAIN=S90controller
 
 RM=rm -rf
 

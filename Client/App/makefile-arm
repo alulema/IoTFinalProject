@@ -9,7 +9,7 @@ LIBS=-lcurl -lc
 
 SRC=main.c tc_state.c tc_error.c
 OBJ=$(SRC:.c=.o)
-MAIN=tcsimd_arm
+MAIN=S80tcsimd_arm
 
 RM=rm -rf
 

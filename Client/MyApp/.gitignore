@@ -1,5 +1,6 @@
 *.o
 main_controller
 main_controller_arm
+S90controller
 cmake-build-debug/
 .idea/

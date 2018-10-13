@@ -29,9 +29,10 @@ static const char *URL_ONLINE          = "http://52.67.91.154:5000/api/thermosta
 static const char *TEMP_FILENAME       = "/tmp/temp";
 static const char *STATE_FILENAME      = "/tmp/status";
 static const char *WORKING_DIR         = "/";
+static char *DEVICEID            = "THE-001";
 
 static const float DEFAULT_TEMPERATURE = 65;
-static const long  SLEEP_DELAY         = 3;
+static const long  SLEEP_DELAY         = 1;
 
 /**
  * If we exit the process, we want to sent information on
@@ -131,8 +132,7 @@ static void _daemonize(void) {
  * This method initiates the device, it reads DEVICE_ID and UNIT
  */
 static void _initialize(void) {
-    // 0. read properties file
-    read_device_properties(&DEVICE_ID, &UNIT);
+    syslog(LOG_INFO, "Starting thermocouple controller");
 }
 
 /**
@@ -142,7 +142,7 @@ static void _initialize(void) {
  */
 static void _run_process(void) {
 
-    char* online_request = create_online_request(DEVICE_ID, UNIT);
+    char* online_request = create_online_request(DEVICEID, "F");
 
     while (true) {
         // Send ping to cloud to indicate the device is online
@@ -160,7 +160,7 @@ static void _run_process(void) {
         }
 
         // Sends data to cloud, and receives the action to perform in actuator
-        char * post_data_request = create_post_data_request(DEVICE_ID, UNIT, heater_state, temperature);
+        char * post_data_request = create_post_data_request(DEVICEID, "F", heater_state, temperature);
         char* action = send_post_str(post_data_request, URL);
 
         if (action == NULL) {
