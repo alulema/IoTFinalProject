@@ -1,0 +1,3 @@
+*.o
+main_controller_x86
+main_controller_arm

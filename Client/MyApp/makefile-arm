@@ -1,0 +1,25 @@
+BUILDROOT_HOME=/home/alexis/Buildroot
+
+CC=$(BUILDROOT_HOME)/output/host/usr/bin/arm-linux-gcc
+CFLAGS=--sysroot=$(BUILDROOT_HOME)/output/staging
+INCLUDES=
+LFLAGS=
+
+LIBS=-lcurl -uClibc -lc
+
+SRC=main.c tc_state.c tc_error.c tc_config.c tc_httpclient.c tc_json.c
+OBJ=$(SRC:.c=.o)
+MAIN=main_controller_arm
+
+RM=rm -rf
+
+.c.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+$(MAIN): $(OBJ)
+		$(CC) $(CCFLAGS) $(INCLUDES) -o $(MAIN) $(OBJ) $(LFLAGS) $(LIBS)
+
+all: $(MAIN)
+
+clean:
+		$(RM) $(MAIN) *.o *~

@@ -1,7 +1,8 @@
 /**
  * This module contains the functions to read and write to the
  * various status files. The API of this module consists of the
- * tc_write_temperature(filename, temp) and the
+ * tc_write_state(filename, state),
+ * tc_read_temperature(filename, temp_buffer) and the
  * tc_read_state(filename, state_buffer) functions. Each
  * function returns an error value on error via the tc_error_t
  * type.
@@ -63,6 +64,14 @@ static tc_error_t _read_state(const char* filename, tc_heater_state_t* result) {
     return retcode;
 }
 
+/**
+ * The lower read function. We read the value, indicate the
+ * result in the passed result buffer, and log the state to
+ * syslog.
+ *
+ * @param filename The file from which to read.
+ * @param t The temperature buffer.
+ */
 static tc_error_t _read_temperature(const char* filename, char ** t) {
 
     // Open the file.
@@ -94,27 +103,12 @@ static tc_error_t _read_temperature(const char* filename, char ** t) {
 }
 
 /**
- * Write the temperature to the file.
+ * Write the heater state to the file.
  *
  * @param filename The file to which to write.
- * @param t The temperature we're writing to the file.
+ * @param t The state we're writing to the file.
  * @return The error conditions.
  */
-static tc_error_t _write_temperature(const char* filename, float t) {
-    // Open the file, check the return value.
-    FILE* fp = fopen(filename, "wb");
-    if (fp == NULL) {
-        return NO_OPEN;
-    }
-
-    // Write that temperature.
-    fprintf(fp, "%f\n", t);
-
-    // Closing and returning.
-    fclose(fp);
-    return OK;
-}
-
 static tc_error_t _write_state(const char* filename, char* state) {
     // Open the file, check the return value.
     FILE* fp = fopen(filename, "wb");
@@ -122,7 +116,7 @@ static tc_error_t _write_state(const char* filename, char* state) {
         return NO_OPEN;
     }
 
-    // Write that temperature.
+    // Write that state.
     fprintf(fp, "%s\n", state);
 
     // Closing and returning.
@@ -135,43 +129,9 @@ static tc_error_t _write_state(const char* filename, char* state) {
  * and retry logic.
  *
  * @param filename The name fo the file to which to write.
- * @param t The temperature to write to the file.
+ * @param t The state to write to the file.
  * @return The error conditions.
  */
-tc_error_t tc_write_temperature(const char* filename, float t) {
-    // Setting the initial interval.
-    char retry_interval = 1;
-
-    // The default return result.
-    tc_error_t result = OK;
-
-    // This do loop supports retrying the writes if we can't
-    // acquire a file handle for some reason.
-    do {
-        result = _write_temperature(filename, t);
-
-        // If we have an error, and we haven't used all our retries,
-        // give it another shot.
-        if (result != OK && retry_interval < 64) {
-
-            // Put an entry in syslog that we had a failure.
-            syslog(LOG_INFO,
-                   "failed temp write (%s); retry with interval (%d)",
-                   strerror(errno),
-                   retry_interval << 1
-            );
-
-            // Sleep, set retry interval, and try again.
-            sleep(retry_interval);
-            retry_interval = retry_interval << 1;
-        }
-
-    } while(result != OK && retry_interval < 64);
-
-    // return the final result.
-    return result;
-}
-
 tc_error_t tc_write_state(const char* filename, tc_heater_state_t state) {
     // Setting the initial interval.
     char retry_interval = 1;
@@ -210,9 +170,7 @@ tc_error_t tc_write_state(const char* filename, tc_heater_state_t state) {
 }
 
 /**
- * The upper reading function. Handles retries, errors, and
- * the like while the lower function handles the mechanics of
- * actually reading from the file.
+ * This method reads the state from file.
  *
  * @param filename The file from which to read.
  * @param state The state buffer.
@@ -255,6 +213,14 @@ tc_error_t  tc_read_state(const char* filename, tc_heater_state_t* state) {
     // Return the error result.
     return result;
 }
+
+/**
+ * This method reads the temperature from file.
+ *
+ * @param filename The file from which to read.
+ * @param t The temperature buffer.
+ * @return The error conditions.
+ */
 
 tc_error_t tc_read_temperature(const char* filename, char ** t) {
     // Initial retry interval.
