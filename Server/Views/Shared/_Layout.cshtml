@@ -1,71 +1,73 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Intro to IoT</title>
 
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css"/>
-    <link rel="stylesheet" href="~/css/gradient-azure/ej.web.all.min.css"/>
-    <link rel="stylesheet" href="~/css/site.css"/>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+    <link rel="stylesheet" href="~/lib/toastr.js/toastr.min.css" />
+    <link rel="stylesheet" href="~/css/gradient-azure/ej.web.all.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
 </head>
 <body>
-<nav class="navbar navbar-inverse navbar-fixed-top">
-    <div class="container">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand">Final Project</a>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand">Final Project</a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li>
+                        <a asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                    </li>
+                </ul>
+            </div>
         </div>
-        <div class="navbar-collapse collapse">
-            <ul class="nav navbar-nav">
-                <li>
-                    <a asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                </li>
-            </ul>
-        </div>
+    </nav>
+
+    <partial name="_CookieConsentPartial" />
+
+    <div class="container body-content">
+        @RenderBody()
+        <hr />
+        <footer>
+            <p>2018</p>
+        </footer>
     </div>
-</nav>
 
-<partial name="_CookieConsentPartial"/>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.10/lodash.min.js"></script>
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
+    <script src="~/lib/toastr.js/toastr.min.js"></script>
 
-<div class="container body-content">
-    @RenderBody()
-    <hr/>
-    <footer>
-        <p>2018</p>
-    </footer>
-</div>
+    <script src="~/lib/ej/jquery.easing.min.js"></script>
+    <script src="~/lib/ej/jsrender.min.js"></script>
+    <script src="~/lib/ej/ej.core.min.js"></script>
+    <script src="~/lib/ej/ej.tab.min.js"></script>
+    <script src="~/lib/ej/ej.dialog.min.js"></script>
+    <script src="~/lib/ej/ej.scroller.min.js"></script>
+    <script src="~/lib/ej/ej.button.min.js"></script>
+    <script src="~/lib/ej/ej.draggable.min.js"></script>
+    <script src="~/lib/ej/ej.globalize.min.js"></script>
+    <script src="~/lib/ej/ej.editor.min.js"></script>
+    <script src="~/lib/ej/ej.datepicker.min.js"></script>
+    <script src="~/lib/ej/ej.timepicker.min.js"></script>
+    <script src="~/lib/ej/ej.daterangepicker.min.js"></script>
+    <script src="~/lib/ej/ej.togglebutton.min.js"></script>
+    <script src="~/lib/ej/ej.checkbox.min.js"></script>
+    <script src="~/lib/ej/ej.data.min.js"></script>
+    <script src="~/lib/ej/ej.chart.min.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/lodash@4.17.10/lodash.min.js"></script>
-<script src="~/lib/jquery/dist/jquery.js"></script>
-<script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
+    <script src="~/lib/handlebars/handlebars.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
 
-<script src="~/lib/ej/jquery.easing.min.js"></script>
-<script src="~/lib/ej/jsrender.min.js"></script>
-<script src="~/lib/ej/ej.core.min.js"></script>
-<script src="~/lib/ej/ej.tab.min.js"></script>
-<script src="~/lib/ej/ej.dialog.min.js"></script>
-<script src="~/lib/ej/ej.scroller.min.js"></script>
-<script src="~/lib/ej/ej.button.min.js"></script>
-<script src="~/lib/ej/ej.draggable.min.js"></script>
-<script src="~/lib/ej/ej.globalize.min.js"></script>
-<script src="~/lib/ej/ej.editor.min.js"></script>
-<script src="~/lib/ej/ej.datepicker.min.js"></script>
-<script src="~/lib/ej/ej.timepicker.min.js"></script>
-<script src="~/lib/ej/ej.daterangepicker.min.js"></script>
-<script src="~/lib/ej/ej.togglebutton.min.js"></script>
-<script src="~/lib/ej/ej.checkbox.min.js"></script>
-<script src="~/lib/ej/ej.data.min.js"></script>
-<script src="~/lib/ej/ej.chart.min.js"></script>
-
-<script src="~/lib/handlebars/handlebars.min.js"></script>
-<script src="~/js/site.js" asp-append-version="true"></script>
-
-@RenderSection("Scripts", required: false)
+    @RenderSection("Scripts", required: false)
 </body>
 </html>
