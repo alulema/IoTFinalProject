@@ -386,6 +386,7 @@ var saveConfig = function (deviceId) {
         contentType: "application/json; charset=utf-8",
         data: JSON.stringify(loadedConfig),
         success: function() {
+            toastr.options.positionClass = "toast-bottom-right";
             toastr.success("Configuration has been saved!");
         },
         error: function () {
