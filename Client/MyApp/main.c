@@ -10,26 +10,12 @@
 #include "tc_json.h"
 #include "tc_httpclient.h"
 #include "tc_state.h"
-#include "jsmn.h"
 
-static const char *URL = "http://52.67.91.154:5000/api/thermostat";
-static const char *URL_ONLINE = "http://52.67.91.154:5000/api/thermostat/online";
-static const char *URL_GETCONFIG = "http://52.67.91.154:5000/api/thermostat/getdeviceconfig?deviceId=";
+static const char *URL = "http://localhost:5000/api/thermostat";
+static const char *URL_ONLINE = "http://localhost:5000/api/thermostat/online";
 static const char *TEMP_FILENAME = "/tmp/temp";
 static const char *STATE_FILENAME = "/tmp/status";
-static const char *WORKING_DIR = "/";
-
-static const char *JSON_STRING =
-        "{\"user\": \"johndoe\", \"admin\": false, \"uid\": 1000,\n  "
-        "\"groups\": [\"users\", \"wheel\", \"audio\", \"video\"]}";
-
-static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
-    if (tok->type == JSMN_STRING && (int) strlen(s) == tok->end - tok->start &&
-        strncmp(json + tok->start, s, tok->end - tok->start) == 0) {
-        return 0;
-    }
-    return -1;
-}
+static const float DEFAULT_TEMPERATURE = 65;
 
 /**
  * If we exit the process, we want to sent information on
@@ -45,13 +31,7 @@ static void _exit_process(const tc_error_t err) {
     exit(err);
 }
 
-
 int main() {
-    int r;
-    jsmn_parser p;
-    jsmntok_t t[2048]; /* We expect no more than 128 tokens */
-    jsmn_init(&p);
-
     // 0. read properties file
     read_device_properties(&DEVICE_ID, &UNIT);
 
@@ -65,7 +45,7 @@ int main() {
     strcat(online_request, "\", \"type\": \"Thermostat\" }");
 
     do {
-        //send_post(online_request, URL_ONLINE);
+        send_post(online_request, URL_ONLINE);
 
         // 2. send enqueued data to cloud to indicate it is online
         // Read the heater state.
@@ -84,72 +64,42 @@ int main() {
         strcpy(post_data_request, "{ \"id\": \"");
         strcat(post_data_request, DEVICE_ID);
         strcat(post_data_request, "\", \"status\": \"");
-        strcat(post_data_request, heater_state == ON ? "ON" : "OFF");
+        strcat(post_data_request, heater_state == OFF ? "OFF" : "ON");
         strcat(post_data_request, "\", \"measurement\": ");
         strcat(post_data_request, temperature);
         strcat(post_data_request, ", \"unit\": \"");
         strcat(post_data_request, UNIT);
         strcat(post_data_request, "\" }");
 
-        //send_post(post_data_request, URL);
+        char* action = send_post_str(post_data_request, URL);
 
-        // 3. read configs from cloud
-        char get_config_url[100];
-        strcpy(get_config_url, URL_GETCONFIG);
-        strcat(get_config_url, DEVICE_ID);
-
-        char *json_config = send_get(get_config_url);
-        r = jsmn_parse(&p, json_config, strlen(json_config), t, sizeof(t)/sizeof(t[0]));
-
-        if (r < 0) {
-            printf("Failed to parse JSON: %d\n", r);
-            return 1;
-        }
-
-
-        /* Assume the top-level element is an object */
-        if (r < 1 || t[0].type != JSMN_OBJECT) {
-            printf("Object expected\n");
-            return 1;
-        }
-
-        /* Loop over all keys of the root object */
-        for (int i = 1; i < r; i++) {
-            if (jsoneq(JSON_STRING, &t[i], "user") == 0) {
-                /* We may use strndup() to fetch string value */
-                printf("- User: %.*s\n", t[i+1].end-t[i+1].start,
-                       JSON_STRING + t[i+1].start);
-                i++;
-            } else if (jsoneq(JSON_STRING, &t[i], "admin") == 0) {
-                /* We may additionally check if the value is either "true" or "false" */
-                printf("- Admin: %.*s\n", t[i+1].end-t[i+1].start,
-                       JSON_STRING + t[i+1].start);
-                i++;
-            } else if (jsoneq(JSON_STRING, &t[i], "uid") == 0) {
-                /* We may want to do strtol() here to get numeric value */
-                printf("- UID: %.*s\n", t[i+1].end-t[i+1].start,
-                       JSON_STRING + t[i+1].start);
-                i++;
-            } else if (jsoneq(JSON_STRING, &t[i], "groups") == 0) {
-                int j;
-                printf("- Groups:\n");
-                if (t[i+1].type != JSMN_ARRAY) {
-                    continue; /* We expect groups to be an array of strings */
-                }
-                for (j = 0; j < t[i+1].size; j++) {
-                    jsmntok_t *g = &t[i+j+2];
-                    printf("  * %.*s\n", g->end - g->start, JSON_STRING + g->start);
-                }
-                i += t[i+1].size + 1;
+        if (action == NULL) {
+            if (atof(temperature) > DEFAULT_TEMPERATURE) {
+                err = tc_write_state(STATE_FILENAME, OFF);
+                if (err != OK) _exit_process(err);
+                printf("Turning OFF heater");
             } else {
-                printf("Unexpected key: %.*s\n", t[i].end-t[i].start,
-                       JSON_STRING + t[i].start);
+                err = tc_write_state(STATE_FILENAME, ON);
+                if (err != OK) _exit_process(err);
+                printf("Turning ON heater");
+            }
+        } else  if (strcmp(action, "1") == 0) {
+            if (heater_state != ON) {
+                err = tc_write_state(STATE_FILENAME, ON);
+                if (err != OK) _exit_process(err);
+                printf("Turning ON heater");
+            }
+        } else {
+            if (heater_state != OFF) {
+                err = tc_write_state(STATE_FILENAME, OFF);
+                if (err != OK) _exit_process(err);
+                printf("Turning OFF heater");
             }
         }
 
-        tc_write_config(json_config);
-        sleep(1);
-    } while (0);
+        // 3. read configs from cloud
+        sleep(2);
+    } while (1);
 
     // 4. if configs are new, then overwrite
     // 5. write configs in local

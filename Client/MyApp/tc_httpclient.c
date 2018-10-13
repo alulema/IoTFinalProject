@@ -66,6 +66,44 @@ bool send_post(char* json, const char * url) {
     return true;
 }
 
+char* send_post_str(char* json, const char * url) {
+    CURL *curl;
+    CURLcode res;
+
+    curl = curl_easy_init();
+
+    if (curl) {
+        struct curl_slist *hs=NULL;
+        struct string s;
+        init_string(&s);
+
+        hs = curl_slist_append(hs, "Content-Type: application/json");
+        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+        curl_easy_setopt(curl, CURLOPT_URL, url);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_write);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, hs);
+        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json);
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, strlen(json));
+        res = curl_easy_perform(curl);
+
+        if (res != CURLE_OK) {
+            fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+            return false;
+        }
+
+        curl_easy_cleanup(curl);
+
+        return s.ptr;
+    } else {
+        return NULL;
+    }
+
+    return NULL;
+}
+
 char* send_get(char* url) {
     CURL *curl;
     CURLcode res;

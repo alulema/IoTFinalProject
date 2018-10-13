@@ -115,6 +115,21 @@ static tc_error_t _write_temperature(const char* filename, float t) {
     return OK;
 }
 
+static tc_error_t _write_state(const char* filename, char* state) {
+    // Open the file, check the return value.
+    FILE* fp = fopen(filename, "wb");
+    if (fp == NULL) {
+        return NO_OPEN;
+    }
+
+    // Write that temperature.
+    fprintf(fp, "%s\n", state);
+
+    // Closing and returning.
+    fclose(fp);
+    return OK;
+}
+
 /**
  * The upper writing function. Here we handle error conditions
  * and retry logic.
@@ -134,6 +149,43 @@ tc_error_t tc_write_temperature(const char* filename, float t) {
     // acquire a file handle for some reason.
     do {
         result = _write_temperature(filename, t);
+
+        // If we have an error, and we haven't used all our retries,
+        // give it another shot.
+        if (result != OK && retry_interval < 64) {
+
+            // Put an entry in syslog that we had a failure.
+            syslog(LOG_INFO,
+                   "failed temp write (%s); retry with interval (%d)",
+                   strerror(errno),
+                   retry_interval << 1
+            );
+
+            // Sleep, set retry interval, and try again.
+            sleep(retry_interval);
+            retry_interval = retry_interval << 1;
+        }
+
+    } while(result != OK && retry_interval < 64);
+
+    // return the final result.
+    return result;
+}
+
+tc_error_t tc_write_state(const char* filename, tc_heater_state_t state) {
+    // Setting the initial interval.
+    char retry_interval = 1;
+
+    // The default return result.
+    tc_error_t result = OK;
+
+    // This do loop supports retrying the writes if we can't
+    // acquire a file handle for some reason.
+    do {
+        if (state == OFF)
+            result = _write_state(filename, "OFF");
+        else
+            result = _write_state(filename, "ON");
 
         // If we have an error, and we haven't used all our retries,
         // give it another shot.

@@ -9,6 +9,7 @@ struct string {
 };
 
 bool send_post(char* json, const char * url);
+char* send_post_str(char* json, const char * url);
 char* send_get(char* url);
 
 #endif //MYAPP_TC_HTTPCLIENT_H

@@ -54,7 +54,7 @@ namespace IoTFinalProject.Controllers
         }
 
         [HttpPost]
-        public bool Post([FromBody] ThermostatRequestViewModel request)
+        public int Post([FromBody] ThermostatRequestViewModel request)
         {
             var item = new ThermostatRequest
             {
@@ -69,7 +69,7 @@ namespace IoTFinalProject.Controllers
             {
                 DbService.InsertDataRequest(item, _connString);
                 var activateIt = Rules.DecideActivation(item, float.Parse(_defaultTempLevel));
-                return activateIt;
+                return activateIt ? 1 : 0;
             }
             catch (Exception e)
             {
