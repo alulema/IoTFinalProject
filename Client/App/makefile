@@ -4,9 +4,9 @@ INCLUDES=
 LFLAGS=-L/usr/lib/x86_64-linux-gnu
 LIBS=-lcurl -lpthread
 
-SRC=main.c tc_state.c tc_error.c tc_config.c tc_httpclient.c tc_json.c
+SRC=main.c tc_state.c tc_error.c
 OBJ=$(SRC:.c=.o)
-MAIN=main_controller
+MAIN=tcsimd
 
 RM=rm -rf
 
@@ -18,5 +18,5 @@ $(MAIN): $(OBJ)
 
 all: $(MAIN)
 
-clean:
+clean: 
 	$(RM) $(MAIN) *.o *~
