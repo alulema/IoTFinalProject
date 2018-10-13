@@ -1,3 +1,5 @@
 *.o
 main_controller
 main_controller_arm
+cmake-build-debug/
+.idea/

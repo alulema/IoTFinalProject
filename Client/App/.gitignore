@@ -1,3 +1,5 @@
 *.o
 tcsimd
 tcsimd_arm
+cmake-build-debug/
+.idea/
