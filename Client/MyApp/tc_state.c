@@ -20,8 +20,47 @@
 #include <syslog.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "tc_state.h"
+
+/**
+ * Returns formatted local time string.
+ * @return local time string
+ */
+static char* get_local_time(void) {
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+    char local_time[25];
+
+    sprintf(local_time, "%d-%d-%d %d:%d:%d:", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour,
+            tm.tm_min, tm.tm_sec);
+    char *data = malloc(80);
+    strcpy(data, local_time);
+
+    return data;
+}
+
+/**
+ * Registers string to log file
+ * @param filename Log filename
+ * @param log String to be append to log file
+ * @return The error conditions.
+ */
+tc_error_t tc_log(const char* filename, char* log) {
+    // Open the file, check the return value.
+    FILE* fp = fopen(filename, "a");
+    if (fp == NULL) {
+        return NO_OPEN;
+    }
+
+    // Write that state.
+    fprintf(fp, "%s: %s\n", get_local_time(), log);
+
+    // Closing and returning.
+    fclose(fp);
+    return OK;
+}
 
 /**
  * The lower read function. We read the value, indicate the

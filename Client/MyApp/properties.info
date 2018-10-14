@@ -1,2 +1,4 @@
+endpoint=http://52.67.91.154:5000
+log_file=/tmp/tc_log.txt
 device_id=THE-001
-unit=F
+unit=C

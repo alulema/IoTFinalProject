@@ -23,16 +23,15 @@
 #include "tc_state.h"
 #include "tc_json.h"
 
-static const char *DAEMON_NAME         = "tccontroller";
-static const char *URL                 = "http://52.67.91.154:5000/api/thermostat";
-static const char *URL_ONLINE          = "http://52.67.91.154:5000/api/thermostat/online";
-static const char *TEMP_FILENAME       = "/tmp/temp";
-static const char *STATE_FILENAME      = "/tmp/status";
-static const char *WORKING_DIR         = "/";
-static char *DEVICEID            = "THE-001";
+static const char *DAEMON_NAME = "tccontroller";
+static const char *URL = "/api/thermostat";
+static const char *URL_ONLINE = "/api/thermostat/online";
+static const char *TEMP_FILENAME = "/tmp/temp";
+static const char *STATE_FILENAME = "/tmp/status";
+static const char *WORKING_DIR = "/";
 
-static const float DEFAULT_TEMPERATURE = 65;
-static const long  SLEEP_DELAY         = 1;
+static const float DEFAULT_TEMPERATURE = 64.4;
+static const long SLEEP_DELAY = 1;
 
 /**
  * If we exit the process, we want to sent information on
@@ -56,7 +55,7 @@ static void _exit_process(const tc_error_t err) {
  * @param signal The signal from the OS.
  */
 static void _signal_handler(const int signal) {
-    switch(signal) {
+    switch (signal) {
         case SIGHUP:
             break;
         case SIGTERM:
@@ -123,16 +122,9 @@ static void _daemonize(void) {
     chdir(WORKING_DIR);
 
     // Closing file descriptors (STDIN, STDOUT, etc.).
-    for (long x = sysconf(_SC_OPEN_MAX); x>=0; x--) {
+    for (long x = sysconf(_SC_OPEN_MAX); x >= 0; x--) {
         close(x);
     }
-}
-
-/**
- * This method initiates the device, it reads DEVICE_ID and UNIT
- */
-static void _initialize(void) {
-    syslog(LOG_INFO, "Starting thermocouple controller");
 }
 
 /**
@@ -142,11 +134,18 @@ static void _initialize(void) {
  */
 static void _run_process(void) {
 
-    char* online_request = create_online_request(DEVICEID, "F");
+    char *online_request = create_online_request(DEVICE_ID, UNIT);
+    char url_base[80];
+    strcpy(url_base, ENDPOINT);
+    strcat(url_base, URL);
+
+    char url_online[80];
+    strcpy(url_online, ENDPOINT);
+    strcat(url_online, URL_ONLINE);
 
     while (true) {
         // Send ping to cloud to indicate the device is online
-        send_post(online_request, URL_ONLINE);
+        send_post(online_request, url_online);
 
         // Read heater state and temperature.
         tc_heater_state_t heater_state = OFF;
@@ -154,14 +153,18 @@ static void _run_process(void) {
         tc_error_t err = tc_read_state(STATE_FILENAME, &heater_state);
         tc_error_t err2 = tc_read_temperature(TEMP_FILENAME, &temperature);
         strtok(temperature, "\n");
+        double temp_c = (atof(temperature) - 32) * 5 / 9;
+        char temp_c_buf[15];
+        sprintf(temp_c_buf, "%f", temp_c);
 
-        if (err != OK || err2 != OK) {
+        if (err != OK || err2 != OK)
             _exit_process(err);
-        }
+
+        tc_log(LOG_FILE, temp_c_buf);
 
         // Sends data to cloud, and receives the action to perform in actuator
-        char * post_data_request = create_post_data_request(DEVICEID, "F", heater_state, temperature);
-        char* action = send_post_str(post_data_request, URL);
+        char *post_data_request = create_post_data_request(DEVICE_ID, UNIT, heater_state, temp_c_buf);
+        char *action = send_post_str(post_data_request, url_base);
 
         if (action == NULL) {
             if (atof(temperature) > DEFAULT_TEMPERATURE) {
@@ -173,7 +176,7 @@ static void _run_process(void) {
                 if (err != OK) _exit_process(err);
                 syslog(LOG_INFO, "Turning ON heater");
             }
-        } else  if (strcmp(action, "1") == 0) {
+        } else if (strcmp(action, "1") == 0) {
             if (heater_state != ON) {
                 err = tc_write_state(STATE_FILENAME, ON);
                 if (err != OK) _exit_process(err);
@@ -192,14 +195,32 @@ static void _run_process(void) {
 }
 
 /**
+ * This method initiates the device, it reads DEVICE_ID and UNIT
+ */
+static bool _initialize(int argc, char *argv[]) {
+    syslog(LOG_INFO, "Starting thermocouple controller");
+    bool to_return = process_arguments(argc, argv);
+
+    if (to_return)
+        read_device_properties_from_file(argv[2], &ENDPOINT, &LOG_FILE, &DEVICE_ID, &UNIT);
+
+    if (ENDPOINT == NULL || LOG_FILE == NULL || DEVICE_ID == NULL || UNIT == NULL)
+        read_device_properties(&ENDPOINT, &LOG_FILE, &DEVICE_ID, &UNIT);
+
+    return to_return;
+}
+
+/**
  * The daemon entry point.
  */
-int main() {
-    // Daemonize the process.
-    _daemonize();
+int main(int argc, char *argv[]) {
 
     // Initializes device settings
-    _initialize();
+    bool startAsConsole = _initialize(argc, argv);
+
+    // Daemonize the process.
+    if (!startAsConsole)
+        _daemonize();
 
     // Execute the primary daemon routines.
     _run_process();
