@@ -6,6 +6,9 @@
 #ifndef MYAPP_TC_CONFIG_H
 #define MYAPP_TC_CONFIG_H
 
+static const char *url_base = "http://52.67.91.154:5000/api/thermostat";
+static const char *url_online = "http://52.67.91.154:5000/api/thermostat/online";
+
 static char* ENDPOINT;
 static char* LOG_FILE;
 static char* DEVICE_ID;

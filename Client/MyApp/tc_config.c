@@ -144,6 +144,11 @@ bool process_arguments(int argc, char *argv[]) {
             printf("Type --help or -h to display online help about start it from console.\n");
             return false;
         case 2:
+            if (strcmp(argv[1], "start") == 0) {
+                syslog(LOG_INFO, "CONTROLLER: Running as daemon");
+                return false;
+            }
+
             isConfig = strcmp(argv[1], "--config_file") == 0 || strcmp(argv[1], "-c") == 0;
             isHelp = strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0;
 

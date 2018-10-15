@@ -1,4 +1,4 @@
-endpoint=http://52.67.91.154:5000
+endpoint=http://iotfinalproject-test.us-east-1.elasticbeanstalk.com
 log_file=/tmp/tc_log.txt
 device_id=THE-001
 unit=C

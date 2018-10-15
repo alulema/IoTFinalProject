@@ -47,9 +47,9 @@ $(document).ready(function () {
 
     $("#txtTemperature").ejNumericTextbox({
         name: "numeric",
-        value: 65,
-        minValue: 40,
-        maxValue: 125,
+        value: 18,
+        minValue: 5,
+        maxValue: 50,
         width: 65
     });
     $('#startTime').ejTimePicker({
@@ -158,9 +158,9 @@ var addPoint = function (title, weekendOption) {
     $('#checkActive').prop('checked', true);
     $("#txtTemperature").ejNumericTextbox({
         name: "numeric",
-        value: 65,
-        minValue: 40,
-        maxValue: 125,
+        value: 18,
+        minValue: 5,
+        maxValue: 50,
         width: 65
     });
     $('#startTime').ejTimePicker({
@@ -205,8 +205,8 @@ var editPoint = function (pointId, deviceId) {
                 $("#txtTemperature").ejNumericTextbox({
                     name: "numeric",
                     value: _v.temperature,
-                    minValue: 40,
-                    maxValue: 125,
+                    minValue: 5,
+                    maxValue: 50,
                     width: 65
                 });
                 $('#startTime').ejTimePicker({
@@ -466,7 +466,7 @@ var getStatsData = function (rate, deviceId, isGlobal) {
                     valueType: 'datetime'
                 },
                 primaryYAxis: {
-                    title: {text: "Temperature (F)"},
+                    title: {text: "Temperature (ºC)"},
                     rangePadding: 'additional'
                 },
                 commonSeriesOptions: {

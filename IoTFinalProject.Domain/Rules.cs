@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using IoTFinalProject.Domain.Model;
 using Newtonsoft.Json;
 
@@ -18,23 +19,38 @@ namespace IoTFinalProject.Domain
             {
                 DateTime now = DateTime.Now;
                 bool hasSelectedPoint = false;
+                var hasSaturdays = config.WeekendPoints.Any(x => x.IsSaturday);
+                var hasSundays = config.WeekendPoints.Any(x => x.IsSunday);
 
                 if (config.SpecialDayPoints.Count > 0)
                 {
                     hasSelectedPoint = ScanSpecialDayPoints(config, ref tempTarget);
 
                     if (!hasSelectedPoint)
-                        hasSelectedPoint = ScanWeekendPoints(config, ref tempTarget);
+                    {
+                        if (config.WeekendPoints.Count > 0)
+                        {
+
+                            if (now.DayOfWeek == DayOfWeek.Saturday && hasSaturdays)
+                                hasSelectedPoint = ScanWeekendPoints(config, ref tempTarget);
+                            else if (now.DayOfWeek == DayOfWeek.Sunday && hasSundays)
+                                hasSelectedPoint = ScanWeekendPoints(config, ref tempTarget);
+                        }
+                    }
 
                     if (!hasSelectedPoint)
                         hasSelectedPoint = ScanDailyPoints(config, ref tempTarget);
                 }
                 else if (config.WeekendPoints.Count > 0)
                 {
-                    hasSelectedPoint = ScanWeekendPoints(config, ref tempTarget);
+                    if (now.DayOfWeek == DayOfWeek.Saturday && hasSaturdays)
+                        hasSelectedPoint = ScanWeekendPoints(config, ref tempTarget);
+                    else if (now.DayOfWeek == DayOfWeek.Sunday && hasSundays)
+                        hasSelectedPoint = ScanWeekendPoints(config, ref tempTarget);
 
                     if (!hasSelectedPoint)
                         hasSelectedPoint = ScanDailyPoints(config, ref tempTarget);
+
                 }
                 else
                     hasSelectedPoint = ScanDailyPoints(config, ref tempTarget);

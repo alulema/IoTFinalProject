@@ -135,16 +135,10 @@ static void _daemonize(void) {
 static void _run_process(void) {
 
     char *online_request = create_online_request(DEVICE_ID, UNIT);
-    char url_base[80];
-    strcpy(url_base, ENDPOINT);
-    strcat(url_base, URL);
-
-    char url_online[80];
-    strcpy(url_online, ENDPOINT);
-    strcat(url_online, URL_ONLINE);
 
     while (true) {
         // Send ping to cloud to indicate the device is online
+        read_device_properties(&ENDPOINT, &LOG_FILE, &DEVICE_ID, &UNIT);
         send_post(online_request, url_online);
 
         // Read heater state and temperature.
@@ -165,28 +159,29 @@ static void _run_process(void) {
         // Sends data to cloud, and receives the action to perform in actuator
         char *post_data_request = create_post_data_request(DEVICE_ID, UNIT, heater_state, temp_c_buf);
         char *action = send_post_str(post_data_request, url_base);
+        syslog(LOG_INFO, "CLOUD URL %s", url_base);
 
         if (action == NULL) {
             if (atof(temperature) > DEFAULT_TEMPERATURE) {
                 err = tc_write_state(STATE_FILENAME, OFF);
                 if (err != OK) _exit_process(err);
-                syslog(LOG_INFO, "Turning OFF heater");
+                syslog(LOG_INFO, "Turning OFF heater, FROM LOCAL");
             } else {
                 err = tc_write_state(STATE_FILENAME, ON);
                 if (err != OK) _exit_process(err);
-                syslog(LOG_INFO, "Turning ON heater");
+                syslog(LOG_INFO, "Turning ON heater, FROM LOCAL");
             }
         } else if (strcmp(action, "1") == 0) {
             if (heater_state != ON) {
                 err = tc_write_state(STATE_FILENAME, ON);
                 if (err != OK) _exit_process(err);
-                syslog(LOG_INFO, "Turning ON heater");
+                syslog(LOG_INFO, "Turning ON heater, FROM CLOUD");
             }
         } else {
             if (heater_state != OFF) {
                 err = tc_write_state(STATE_FILENAME, OFF);
                 if (err != OK) _exit_process(err);
-                syslog(LOG_INFO, "Turning OFF heater");
+                syslog(LOG_INFO, "Turning OFF heater, FROM CLOUD");
             }
         }
 
