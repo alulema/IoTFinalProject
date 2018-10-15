@@ -166,7 +166,7 @@ namespace IoTFinalProject.Domain.Data
             MySqlConnection conn = null;
 
             conn = OpenConnection(connString);
-            var query = "UPDATE device_config SET configuration=@value WHERE device_id=@DeviceId";
+            var query = "UPDATE device_config SET configuration=@Configuration WHERE device_id=@DeviceId";
             MySqlCommand cmd = new MySqlCommand(query, conn);
 
             cmd.Parameters.AddWithValue("@DeviceId", config.DeviceId);
