@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using IoTFinalProject.Domain.Model;
 using MySql.Data.MySqlClient;
+using Newtonsoft.Json;
 
 namespace IoTFinalProject.Domain.Data
 {
@@ -81,11 +82,11 @@ namespace IoTFinalProject.Domain.Data
                 "(@DeviceId, @DeviceStatus, @Measurement, @Unit, @Timestamp)";
             MySqlCommand cmd = new MySqlCommand(query, conn);
 
-            cmd.Parameters.Add("@DeviceId", item.DeviceId);
-            cmd.Parameters.Add("@DeviceStatus", item.DeviceStatus);
-            cmd.Parameters.Add("@Measurement", item.Measurement);
-            cmd.Parameters.Add("@Unit", item.Unit);
-            cmd.Parameters.Add("@Timestamp", item.Timestamp);
+            cmd.Parameters.AddWithValue("@DeviceId", item.DeviceId);
+            cmd.Parameters.AddWithValue("@DeviceStatus", item.DeviceStatus);
+            cmd.Parameters.AddWithValue("@Measurement", item.Measurement);
+            cmd.Parameters.AddWithValue("@Unit", item.Unit);
+            cmd.Parameters.AddWithValue("@Timestamp", item.Timestamp);
             cmd.ExecuteNonQuery();
 
             if (conn != null && conn.State == ConnectionState.Open)
@@ -123,6 +124,57 @@ namespace IoTFinalProject.Domain.Data
                 conn.Close();
 
             return items.ToArray();
+        }
+
+        public static DeviceConfiguration GetDeviceConfig(string connString, string deviceId)
+        {
+            MySqlConnection conn = null;
+
+            conn = OpenConnection(connString);
+            var query = $"SELECT configuration FROM device_config WHERE device_id=@DeviceId";
+            MySqlCommand cmd = new MySqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@DeviceId", deviceId);
+            DeviceConfiguration config;
+
+            var reader = cmd.ExecuteScalar();
+
+            if (reader == null)
+            {
+                config = new DeviceConfiguration
+                {
+                    DeviceId = deviceId
+                };
+
+                query = "INSERT INTO device_config (device_id, configuration) VALUES (@DeviceId, @Configuration)";
+                MySqlCommand cmd2 = new MySqlCommand(query, conn);
+
+                cmd2.Parameters.AddWithValue("@DeviceId", deviceId);
+                cmd2.Parameters.AddWithValue("@Configuration", JsonConvert.SerializeObject(config));
+                cmd2.ExecuteNonQuery();
+            }
+            else
+                config = JsonConvert.DeserializeObject<DeviceConfiguration>(reader.ToString());
+
+            if (conn != null && conn.State == ConnectionState.Open)
+                conn.Close();
+
+            return config;
+        }
+
+        public static void SaveDeviceConfig(string connString, DeviceConfiguration config)
+        {
+            MySqlConnection conn = null;
+
+            conn = OpenConnection(connString);
+            var query = "UPDATE device_config SET configuration=@value WHERE device_id=@DeviceId";
+            MySqlCommand cmd = new MySqlCommand(query, conn);
+
+            cmd.Parameters.AddWithValue("@DeviceId", config.DeviceId);
+            cmd.Parameters.AddWithValue("@Configuration", JsonConvert.SerializeObject(config));
+            cmd.ExecuteNonQuery();
+
+            if (conn != null && conn.State == ConnectionState.Open)
+                conn.Close();
         }
     }
 }

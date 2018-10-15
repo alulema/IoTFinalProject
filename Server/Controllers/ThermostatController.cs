@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using IoTFinalProject.Domain;
 using IoTFinalProject.Domain.Data;
 using IoTFinalProject.Domain.Model;
@@ -7,7 +6,6 @@ using IoTFinalProject.Domain.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 namespace IoTFinalProject.Controllers
 {
@@ -68,7 +66,7 @@ namespace IoTFinalProject.Controllers
             try
             {
                 DbService.InsertDataRequest(item, _connString);
-                var activateIt = Rules.DecideActivation(item, float.Parse(_defaultTempLevel));
+                var activateIt = Rules.DecideActivation(_connString, item, float.Parse(_defaultTempLevel));
                 return activateIt ? 1 : 0;
             }
             catch (Exception e)
@@ -91,25 +89,13 @@ namespace IoTFinalProject.Controllers
         [HttpGet("getdeviceconfig")]
         public DeviceConfiguration GetDeviceConfig(string deviceId)
         {
-            return Rules.GetDeviceConfig(deviceId);
+            return DbService.GetDeviceConfig(_connString, deviceId);
         }
 
         [HttpPost("savedeviceconfig")]
         public bool SaveDeviceConfig(DeviceConfiguration config)
         {
-            if (!Directory.Exists("devices"))
-                Directory.CreateDirectory("devices");
-
-            string filePath = $"devices/config.{config.DeviceId}.json";
-
-            if (System.IO.File.Exists(filePath))
-                System.IO.File.Delete(filePath);
-
-            var json = JsonConvert.SerializeObject(config);
-            StreamWriter fileStream = System.IO.File.CreateText(filePath);
-            fileStream.Write(json);
-            fileStream.Close();
-
+            DbService.SaveDeviceConfig(_connString, config);
             return true;
         }
     }
