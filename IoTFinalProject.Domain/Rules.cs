@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Globalization;
-using System.IO;
 using System.Linq;
+using IoTFinalProject.Domain.Data;
 using IoTFinalProject.Domain.Model;
-using Newtonsoft.Json;
 
 namespace IoTFinalProject.Domain
 {
     public class Rules
     {
-        public static bool DecideActivation(ThermostatRequest request, float defaultLevel)
+        public static bool DecideActivation(string connString, ThermostatRequest request, float defaultLevel)
         {
-            var config = GetDeviceConfig(request.DeviceId);
+            var config = DbService.GetDeviceConfig(connString, request.DeviceId);
             float tempTarget = defaultLevel;
 
             // 1. If no levels, then use default
@@ -124,35 +123,6 @@ namespace IoTFinalProject.Domain
                 return new[] { from, until };
 
             return new[] { from };
-        }
-
-        public static DeviceConfiguration GetDeviceConfig(string deviceId)
-        {
-            if (!Directory.Exists("devices"))
-                Directory.CreateDirectory("devices");
-
-            string filePath = $"devices/config.{deviceId}.json";
-
-            DeviceConfiguration config;
-
-            if (!System.IO.File.Exists(filePath))
-            {
-                config = new DeviceConfiguration
-                {
-                    DeviceId = deviceId
-                };
-                var json = JsonConvert.SerializeObject(config);
-                StreamWriter fileStream = System.IO.File.CreateText(filePath);
-                fileStream.Write(json);
-                fileStream.Close();
-            }
-            else
-            {
-                var json = System.IO.File.ReadAllText(filePath);
-                config = JsonConvert.DeserializeObject<DeviceConfiguration>(json);
-            }
-
-            return config;
         }
     }
 }
