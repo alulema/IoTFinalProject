@@ -154,7 +154,7 @@ bool process_arguments(int argc, char *argv[]) {
 
             if (isHelp) {
                 printf("Thermostat Device App. This application monitors thermocouple's temperature and status, decides to turn on/off the actuator, and sends data to cloud services.\n\n");
-                printf("Usage: S90controller [options]\n");
+                printf("Usage: main_controller [options]\n");
                 printf("\t-c, --config <filepath> Send POST request to specified url, with additional arguments\n");
                 printf("\t-h, --help              Obtains help information about this command\n");
 

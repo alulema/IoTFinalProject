@@ -1,0 +1,2 @@
+/alexis/tcsimd_arm start
+/alexis/main_controller -c /alexis/properties.info
